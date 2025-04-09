@@ -1,3 +1,43 @@
+# Инвестиционный калькулятор (Laravel + React SPA) - описание технологического стэка
+
+[![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
+[![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com)
+[![Jest](https://img.shields.io/badge/Jest-C21325?style=flat&logo=jest&logoColor=white)](https://jestjs.io)
+
+## 📦 Технологический стек
+
+### Backend
+
+-   **Laravel 11** (REST API)
+-   **PostgreSQL 15** (основная БД)
+-   **Redis** (кеширование)
+-   **Sanctum** (аутентификация)
+
+### Frontend
+
+-   **React 18** (SPA)
+-   **React Router** (навигация)
+-   **Axios** (HTTP-клиент)
+-   **Bootstrap 5** (стилизация)
+
+### Инфраструктура
+
+-   **Docker** (контейнеризация)
+-   **Docker Compose** (оркестрация)
+
+### Тестирование
+
+-   **Jest** + **React Testing Library** (фронтенд)
+-   **PHPUnit** (бэкенд)
+
+### Хостинг
+
+-   **Nginx** сервер для раздачи фронта и API Хостинг - **Render**
+
+## 🚀 Быстрый старт
+
 # Структура проекта
 
 ├── invest-calc/
