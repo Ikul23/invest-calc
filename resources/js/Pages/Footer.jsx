@@ -6,6 +6,7 @@ export default function Footer() {
   return (
     <footer className="bg-dark text-white py-4 mt-auto">
       <Container className="text-center">
+        <h5>Нужен полный пакет документов? Свяжитесь с нами!</h5>
         <div className="mb-3">
           <OverlayTrigger
             placement="top"

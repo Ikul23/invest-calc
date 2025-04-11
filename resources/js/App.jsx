@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Pages/Home';
 import Navbar from './Pages/Navbar';
 import CalculatorPage from './Pages/CalculatorPage';
@@ -19,8 +19,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/calc" element={<CalculatorPage />} />
           <Route path="/input" element={<InputPage />} />
-          <Route path="/results" element={<ResultsPage />} />
+          <Route path="/results/:projectId" element={<ResultsPage />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </BrowserRouter>

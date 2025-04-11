@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import axios from 'axios';
 import Footer from '../Pages/Footer';
+import { useNavigate } from 'react-router-dom';
 
 export default function InputPage() {
   const [projectName, setProjectName] = useState('');
   const [financialData, setFinancialData] = useState([
-    { year: '', opex: '', capex: '', revenue: '' },
+    { year: new Date().getFullYear(), opex: '', capex: '', revenue: '' },
   ]);
   const [message, setMessage] = useState('');
+  const [isCalculating, setIsCalculating] = useState(false); // Для индикатора загрузки
+  const navigate = useNavigate();
 
   const handleAddRow = () => {
-    setFinancialData([...financialData, { year: '', opex: '', capex: '', revenue: '' }]);
+    const nextYear = financialData[financialData.length - 1].year + 1;
+    setFinancialData([...financialData, { year: nextYear, opex: '', capex: '', revenue: '' }]);
   };
 
   const handleRemoveRow = (index) => {
@@ -29,50 +33,67 @@ export default function InputPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setIsCalculating(true);
 
     try {
-      // Валидация перед отправкой
+      // Валидация данных
       const hasEmptyFields = financialData.some(row =>
-        Object.values(row).some(val => val === '')
+        Object.entries(row).some(([key, val]) => key !== 'year' && val === '')
       );
 
       if (!projectName || hasEmptyFields) {
         throw new Error('Заполните все обязательные поля');
       }
 
-      // Преобразование данных перед отправкой
+      // Подготовка данных для API
       const requestData = {
         project_name: projectName,
-        financial_data: financialData.map(row => ({
-          year: Number(row.year),
-          opex: Number(row.opex),
-          capex: Number(row.capex),
-          revenue: Number(row.revenue)
-        }))
+        years: financialData.map(row => row.year),
+        opex: financialData.map(row => Number(row.opex)),
+        capex: financialData.map(row => Number(row.capex)),
+        revenue: financialData.map(row => Number(row.revenue)),
       };
 
-      const response = await axios.post('/api/input-data', requestData, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
+      // Отправка данных и получение результатов расчетов
+      const response = await axios.post('/api/calculate', requestData);
+
+      // Подготовка данных для передачи на страницу результатов
+      const resultsData = {
+        projectName,
+        inputData: financialData.map(row => ({
+          year: row.year,
+          opex: row.opex,
+          capex: row.capex,
+          revenue: row.revenue
+        })),
+        calculations: response.data // { npv, irr, dpbp, cashFlows }
+      };
+
+      // Переход на страницу результатов с данными
+      navigate('/results', {
+        state: resultsData
       });
 
-      setMessage(response.data.message || 'Данные успешно сохранены');
-
-      // Очистка формы после успешного сохранения
-      setProjectName('');
-      setFinancialData([{ year: '', opex: '', capex: '', revenue: '' }]);
-
     } catch (error) {
-      console.error('Ошибка при сохранении:', error);
+      console.error('Ошибка при расчетах:', error);
       setMessage(
         error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
-        'Ошибка при сохранении данных'
+        'Произошла ошибка при расчетах'
       );
+    } finally {
+      setIsCalculating(false);
     }
   };
+
+  // Проверка на возможность расчета (все поля заполнены)
+  const canCalculate = projectName &&
+    financialData.every(row =>
+      row.opex !== '' &&
+      row.capex !== '' &&
+      row.revenue !== ''
+    );
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -114,7 +135,6 @@ export default function InputPage() {
                   <div className="col-md-2">
                     <input
                       type="number"
-                      placeholder="Год"
                       className="form-control"
                       value={row.year}
                       onChange={(e) => handleChange(index, 'year', e.target.value)}
@@ -165,6 +185,7 @@ export default function InputPage() {
                         type="button"
                         className="btn btn-danger"
                         onClick={() => handleRemoveRow(index)}
+                        aria-label="Удалить строку"
                       >
                         ×
                       </button>
@@ -186,8 +207,17 @@ export default function InputPage() {
           </div>
 
           <div className="text-center">
-            <button type="submit" className="btn btn-primary btn-lg">
-              Сохранить данные
+            <button
+              type="submit"
+              className="btn btn-primary btn-lg"
+              disabled={!canCalculate || isCalculating}
+            >
+              {isCalculating ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Расчет...
+                </>
+              ) : 'Рассчитать показатели'}
             </button>
           </div>
         </form>

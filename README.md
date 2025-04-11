@@ -57,6 +57,14 @@
 │ │ └── Dockerfile
 │ ├── public/
 │ ├── resources/
+│ ├── App.jsx (роутинг)
+│ ├── Pages/
+│ ├── Home.jsx
+│ ├── Navbar.jsx (навигация с NavLink)
+│ ├── InputPage.jsx (отправка данных + navigate)
+│ ├── ResultsPage.jsx (получение данных через useLocation)
+│ ├── CalculatorPage.jsx
+│ └── Register.jsx
 │ ├── routes/
 │ ├── storage/
 │ ├── tests/

@@ -1,12 +1,12 @@
-import { Container, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+// src/Pages/Home.jsx
+import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import Footer from '../Pages/Footer';
+import Footer from './Footer';
 
-function Home() {
+export default function Home() {
   return (
     <div className="d-flex flex-column min-vh-100">
-      {/* Основное содержимое */}
-      <Container className="text-center my-auto py-5">
+      <div className="text-center my-auto py-5">
         <h1 className="mb-4 text-primary">
           Экспресс расчет оценки эффективности инвестиционного проекта
         </h1>
@@ -15,11 +15,8 @@ function Home() {
             Начать расчет
           </Button>
         </Link>
-      </Container>
-
+      </div>
       <Footer />
     </div>
   );
 }
-
-export default Home;
