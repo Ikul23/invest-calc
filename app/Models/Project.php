@@ -2,14 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
-    protected $fillable = ['name'];
+    use HasFactory;
 
-    public function financialData()
+    protected $fillable = [
+        'name',
+        'slug',
+    ];
+
+    public function inputData()
     {
-        return $this->hasMany(FinancialData::class);
+        return $this->hasMany(InputData::class);
     }
 }

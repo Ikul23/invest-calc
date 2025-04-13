@@ -30,62 +30,58 @@ export default function InputPage() {
     setFinancialData(updatedData);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    setIsCalculating(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setMessage('');
+  setIsCalculating(true);
 
-    try {
-      // Валидация данных
-      const hasEmptyFields = financialData.some(row =>
-        Object.entries(row).some(([key, val]) => key !== 'year' && val === '')
-      );
+  try {
 
-      if (!projectName || hasEmptyFields) {
-        throw new Error('Заполните все обязательные поля');
-      }
+    // Валидация данных
+    const hasEmptyFields = financialData.some(row =>
+      Object.entries(row).some(([key, val]) => key !== 'year' && val === '')
+    );
 
-      // Подготовка данных для API
-      const requestData = {
-        project_name: projectName,
-        years: financialData.map(row => row.year),
-        opex: financialData.map(row => Number(row.opex)),
-        capex: financialData.map(row => Number(row.capex)),
-        revenue: financialData.map(row => Number(row.revenue)),
-      };
-
-      // Отправка данных и получение результатов расчетов
-      const response = await axios.post('/api/calculate', requestData);
-
-      // Подготовка данных для передачи на страницу результатов
-      const resultsData = {
-        projectName,
-        inputData: financialData.map(row => ({
-          year: row.year,
-          opex: row.opex,
-          capex: row.capex,
-          revenue: row.revenue
-        })),
-        calculations: response.data // { npv, irr, dpbp, cashFlows }
-      };
-
-      // Переход на страницу результатов с данными
-      navigate('/results', {
-        state: resultsData
-      });
-
-    } catch (error) {
-      console.error('Ошибка при расчетах:', error);
-      setMessage(
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        'Произошла ошибка при расчетах'
-      );
-    } finally {
-      setIsCalculating(false);
+    if (!projectName || hasEmptyFields) {
+      throw new Error('Заполните все обязательные поля');
     }
-  };
+
+    // Подготовка данных для API
+    const requestData = {
+      project_name: projectName,
+      financial_data: financialData.map(row => ({
+        year: row.year,
+        opex: Number(row.opex),
+        capex: Number(row.capex),
+        revenue: Number(row.revenue)
+      }))
+    };
+    console.log('Данные для отправки:', requestData);
+    // Отправка данных и получение результатов расчетов
+    const response = await axios.post('/api/input-data', requestData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+ console.log('Получен ответ:', response.data);
+    // Переход на страницу результатов с ID проекта
+    if (response.data && response.data.project_id) {
+      navigate(`/results/${response.data.project_id}`);
+    } else {
+      throw new Error('Сервер не вернул ID проекта');
+    }
+  } catch (error) {
+    console.error('Детали ошибки:', error);
+    setMessage(
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      'Произошла ошибка при расчетах'
+    );
+  } finally {
+    setIsCalculating(false);
+  }
+};
 
   // Проверка на возможность расчета (все поля заполнены)
   const canCalculate = projectName &&

@@ -1,62 +1,60 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Spinner } from 'react-bootstrap';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import Footer from './Footer';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { Card, CardBody, CardTitle, CardText } from 'reactstrap';
+import { Line } from 'react-chartjs-2';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
-export default function ResultsPage() {
-  const { projectId } = useParams();
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const PDF_URL = `/api/pdf/${projectId}`; // ссылка на PDF, поправь при необходимости
+const ResultsPage = () => {
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        const res = await axios.get(`/api/projects/${projectId}/results`);
-        setResults(res.data);
-      } catch (err) {
-        setError('Ошибка при загрузке результатов');
-      } finally {
-        setLoading(false);
-      }
-    };
+    const stored = localStorage.getItem('calculationResult');
+    if (stored) {
+      setResult(JSON.parse(stored));
+    }
+  }, []);
 
-    fetchResults();
-  }, [projectId]);
+  const handleDownloadPdf = async () => {
+    try {
+      const response = await axios.post('/api/export-pdf', result, {
+        responseType: 'blob',
+      });
 
-  if (loading) {
-    return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" role="status" />
-        <p>Загрузка...</p>
-      </Container>
-    );
-  }
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${result.project_name}_report.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Ошибка при экспорте PDF:', error);
+      alert('Не удалось скачать PDF-файл');
+    }
+  };
 
-  if (error) {
-    return (
-      <Container className="text-center mt-5">
-        <p className="text-danger">{error}</p>
-      </Container>
-    );
-  }
+  if (!result) return <div className="container mt-5">Загрузка результатов...</div>;
 
   const chartData = {
-    labels: results.cashflow.map((item) => item.year),
+    labels: result.cashflow.map((row) => `Год ${row.year}`),
     datasets: [
       {
-        label: 'Cash Flow',
-        data: results.cashflow.map((item) => item.value),
-        fill: false,
-        backgroundColor: '#198754',
-        borderColor: '#198754',
+        label: 'Денежный поток',
+        data: result.cashflow.map((row) => row.cashflow),
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.3)',
+        fill: true,
+        tension: 0.3,
       },
     ],
   };
@@ -64,100 +62,79 @@ export default function ResultsPage() {
   const chartOptions = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'График движения денежных средств' },
+      legend: {
+        position: 'top',
+      },
     },
   };
 
   return (
-    <>
-      <Container className="my-5">
-        <h2 className="mb-4 text-center">Результаты расчёта</h2>
+    <div className="container mt-5">
+      <h2 className="mb-4">Результаты по проекту: {result.project_name}</h2>
 
-        {/* Метрики */}
-        <Row className="mb-4">
-          <Col md={3}>
-            <Card bg="success" text="white" className="mb-3">
-              <Card.Body>
-                <Card.Title>NPV</Card.Title>
-                <Card.Text>{results.metrics.npv.toLocaleString()} ₽</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card bg="info" text="white" className="mb-3">
-              <Card.Body>
-                <Card.Title>IRR</Card.Title>
-                <Card.Text>{results.metrics.irr.toFixed(2)}%</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card bg="warning" text="dark" className="mb-3">
-              <Card.Body>
-                <Card.Title>DPBP</Card.Title>
-                <Card.Text>{results.metrics.dpbp} лет</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card bg="dark" text="white" className="mb-3">
-              <Card.Body>
-                <Card.Title>Discount Rate</Card.Title>
-                <Card.Text>{results.metrics.discountRate}%</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+      <div className="row">
+        <div className="col-md-4">
+          <Card className="mb-3 shadow-sm">
+            <CardBody>
+              <CardTitle tag="h5">NPV</CardTitle>
+              <CardText>{result.metrics.npv.toLocaleString()} ₽</CardText>
+            </CardBody>
+          </Card>
+        </div>
+        <div className="col-md-4">
+          <Card className="mb-3 shadow-sm">
+            <CardBody>
+              <CardTitle tag="h5">IRR</CardTitle>
+              <CardText>{result.metrics.irr} %</CardText>
+            </CardBody>
+          </Card>
+        </div>
+        <div className="col-md-4">
+          <Card className="mb-3 shadow-sm">
+            <CardBody>
+              <CardTitle tag="h5">DPBP</CardTitle>
+              <CardText>{result.metrics.dpbp} лет</CardText>
+            </CardBody>
+          </Card>
+        </div>
+      </div>
 
-        {/* Таблица */}
-        <h4 className="mt-5 mb-3">Таблица движения денежных средств</h4>
-        <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>Год</th>
-              <th>Выручка</th>
-              <th>CAPEX</th>
-              <th>OPEX</th>
-              <th>Cash Flow</th>
+      <h4 className="mt-4">График денежных потоков:</h4>
+      <Line data={chartData} options={chartOptions} className="mb-5" />
+
+      <h4 className="mt-4">Денежные потоки:</h4>
+      <table className="table table-bordered table-striped mt-2">
+        <thead className="table-light">
+          <tr>
+            <th>Год</th>
+            <th>Выручка</th>
+            <th>OPEX</th>
+            <th>CAPEX</th>
+            <th>EBT</th>
+            <th>Налог (25%)</th>
+            <th>Чистый поток</th>
+          </tr>
+        </thead>
+        <tbody>
+          {result.cashflow.map((row, index) => (
+            <tr key={index}>
+              <td>{row.year}</td>
+              <td>{row.revenue.toLocaleString()}</td>
+              <td>{row.opex.toLocaleString()}</td>
+              <td>{row.capex.toLocaleString()}</td>
+              <td>{row.ebt.toLocaleString()}</td>
+              <td>{row.tax.toLocaleString()}</td>
+              <td>{row.cashflow.toLocaleString()}</td>
             </tr>
-          </thead>
-          <tbody>
-            {results.cashflow.map((item) => (
-              <tr key={item.year}>
-                <td>{item.year}</td>
-                <td>{item.revenue.toLocaleString()}</td>
-                <td>{item.capex.toLocaleString()}</td>
-                <td>{item.opex.toLocaleString()}</td>
-                <td>{item.value.toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+          ))}
+        </tbody>
+      </table>
 
-        {/* График */}
-        <div className="my-5">
-          <Line data={chartData} options={chartOptions} />
-        </div>
-
-        {/* PDF preview и кнопка */}
-        <div className="text-center my-5">
-          <h4 className="mb-3">Предварительный просмотр PDF-отчёта</h4>
-          <iframe
-            src={`${PDF_URL}#toolbar=0`}
-            title="PDF Preview"
-            width="100%"
-            height="600px"
-            style={{ border: '1px solid #ccc', borderRadius: '8px', marginBottom: '1rem' }}
-          ></iframe>
-
-          <a href={PDF_URL} target="_blank" rel="noopener noreferrer" download>
-            <Button variant="success">Скачать PDF</Button>
-          </a>
-        </div>
-      </Container>
-
-      <Footer />
-    </>
+      <button className="btn btn-primary mt-4" onClick={handleDownloadPdf}>
+        Скачать PDF
+      </button>
+    </div>
   );
-}
+};
+
+export default ResultsPage;

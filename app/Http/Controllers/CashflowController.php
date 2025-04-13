@@ -15,27 +15,65 @@ class CashflowController extends Controller
             'financial_data' => 'required|array',
         ]);
 
-        // Извлекаем данные по годам
-        $revenue = array_column($data['financial_data'], 'revenue');
-        $opex = array_column($data['financial_data'], 'opex');
-        $capex = array_column($data['financial_data'], 'capex');
+        $taxRate = 0.25; // 25% налог
+        $discountRate = 0.1; // 10% дисконт
 
-        // ... (остальная логика расчётов)
+        $cashFlows = [];
+        $cashflowDetails = [];
 
-        // Сохраняем в БД
+        foreach ($data['financial_data'] as $yearData) {
+            $year = $yearData['year'];
+            $revenue = $yearData['revenue'];
+            $opex = $yearData['opex'];
+            $capex = $yearData['capex'];
+
+            // Прибыль до налога
+            $ebt = $revenue - $opex - $capex;
+
+            // Налог, если прибыль положительная
+            $tax = $ebt > 0 ? $ebt * $taxRate : 0;
+
+            // Чистый денежный поток
+            $netCashFlow = $ebt - $tax;
+            $cashFlows[] = $netCashFlow;
+
+            $cashflowDetails[] = [
+                'year' => $year,
+                'revenue' => $revenue,
+                'opex' => $opex,
+                'capex' => $capex,
+                'ebt' => round($ebt, 2),
+                'tax' => round($tax, 2),
+                'cashflow' => round($netCashFlow, 2),
+            ];
+        }
+
+        // Сохраняем данные в базу
         foreach ($data['financial_data'] as $yearData) {
             InputData::create([
                 'project_name' => $data['project_name'],
-                ...$yearData,
+                'year' => $yearData['year'],
+                'revenue' => $yearData['revenue'],
+                'opex' => $yearData['opex'],
+                'capex' => $yearData['capex'],
             ]);
         }
 
+        // Метрики
+        $npv = round($this->calculateNPV($cashFlows, $discountRate), 2);
+        $irr = round($this->calculateIRR($cashFlows) * 100, 2);
+        $dpbp = $this->calculateDPBP($cashFlows, $discountRate);
+
         return response()->json([
             'project_name' => $data['project_name'],
-            'cashFlows' => $cashFlows,
-            'npv' => round($npv, 2),
-            'irr' => round($irr * 100, 2),
-            'dpbp' => $dpbp,
+            'cashflow' => $cashflowDetails,
+            'metrics' => [
+                'npv' => $npv,
+                'irr' => $irr,
+                'dpbp' => $dpbp,
+                'discountRate' => $discountRate * 100,
+                'taxRate' => $taxRate * 100,
+            ]
         ]);
     }
 

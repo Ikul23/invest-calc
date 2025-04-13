@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\InputData;
+use App\Models\Project; // Добавим новую модель для проектов
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class InputDataController extends Controller
 {
@@ -21,8 +23,18 @@ class InputDataController extends Controller
                 'financial_data.*.revenue' => 'required|numeric|min:0',
             ]);
 
+            // Создаем запись проекта
+            $project = \App\Models\Project::create([
+                'name' => $data['project_name'],
+                'slug' => Str::slug($data['project_name']) . '-' . time(), // Добавляем уникальный идентификатор
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Сохраняем все финансовые данные, связанные с проектом
             foreach ($data['financial_data'] as $entry) {
                 \App\Models\InputData::create([
+                    'project_id' => $project->id, // Связываем с проектом
                     'project_name' => $data['project_name'],
                     'year' => $entry['year'],
                     'opex' => $entry['opex'],
@@ -32,8 +44,15 @@ class InputDataController extends Controller
             }
 
             \DB::commit();
-            \Log::info('Ответ к фронту:', ['project_name' => $data['project_name']]);
-            return response()->json(['message' => 'Данные успешно сохранены'], 201);
+            \Log::info('Ответ к фронту:', [
+                'project_name' => $data['project_name'],
+                'project_id' => $project->id
+            ]);
+
+            return response()->json([
+                'message' => 'Данные успешно сохранены',
+                'project_id' => $project->id
+            ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \DB::rollBack();
             return response()->json([

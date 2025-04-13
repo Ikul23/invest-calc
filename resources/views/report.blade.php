@@ -1,60 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 
 <head>
-    <meta charset="utf-8">
-    <title>Финансовый отчёт</title>
+    <meta charset="UTF-8">
+    <title>{{ $project_name }} — отчет</title>
     <style>
         body {
-            font-family: sans-serif;
-        }
-
-        table,
-        th,
-        td {
-            border: 1px solid black;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 6px;
-            text-align: center;
-        }
-
-        .footer {
+            font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 5px;
             text-align: center;
-            color: #555;
         }
     </style>
 </head>
 
 <body>
-    <h2>{{ $project_name }}</h2>
+    <h2>Отчет по проекту: {{ $project_name }}</h2>
 
-    <h4>Таблица DCF</h4>
     <table>
-        <tr>
-            <th>Год</th>
-            <th>Денежный поток</th>
-        </tr>
-        @foreach ($cashFlows as $year => $cf)
+        <thead>
             <tr>
-                <td>{{ $year + 1 }}</td>
-                <td>{{ number_format($cf, 2, ',', ' ') }}</td>
+                <th>Год</th>
+                <th>Выручка</th>
+                <th>OPEX</th>
+                <th>CAPEX</th>
+                <th>EBT</th>
+                <th>Налог</th>
+                <th>Чистый поток</th>
             </tr>
-        @endforeach
+        </thead>
+        <tbody>
+            @foreach ($cashflow as $row)
+                <tr>
+                    <td>{{ $row['year'] }}</td>
+                    <td>{{ $row['revenue'] }}</td>
+                    <td>{{ $row['opex'] }}</td>
+                    <td>{{ $row['capex'] }}</td>
+                    <td>{{ $row['ebt'] }}</td>
+                    <td>{{ $row['tax'] }}</td>
+                    <td>{{ $row['cashflow'] }}</td>
+                </tr>
+            @endforeach
+        </tbody>
     </table>
 
-    <p><strong>NPV:</strong> {{ $npv }}</p>
-    <p><strong>IRR:</strong> {{ $irr }}%</p>
-    <p><strong>DPBP:</strong> {{ $dpbp }} лет</p>
-
-    <div class="footer">
-        © 2025 ИнвестКальк. Контакты: kompaniya.gisplyus@bk.ru | Telegram: @ikul23
-    </div>
+    <h4>Финансовые метрики:</h4>
+    <ul>
+        <li>NPV: {{ $metrics['npv'] }}</li>
+        <li>IRR: {{ $metrics['irr'] }}%</li>
+        <li>DPBP: {{ $metrics['dpbp'] }} лет</li>
+        <li>Ставка дисконтирования: {{ $metrics['discountRate'] }}%</li>
+        <li>Налог на прибыль: {{ $metrics['taxRate'] }}%</li>
+    </ul>
 </body>
 
 </html>

@@ -41,49 +41,98 @@
 
 # Структура проекта
 
-├── invest-calc/
+invest-calc/
+├── app/
+│ ├── Http/
+│ │ ├── Controllers/
+│ │ │ ├── Api/
+│ │ │ │ └── TaskController.php
+│ │ │ ├── Auth/
+│ │ │ │ ├── AuthController.php
+│ │ │ │ ├── CashflowController.php
+│ │ │ │ ├── Controller.php
+│ │ │ │ ├── InputDataController.php
+│ │ │ │ └── ProfileController.php
+│ │ ├── Middleware/
+│ │ └── Requests/
+│ ├── Models/
+│ │ ├── FinancialData.php
+│ │ ├── InputData.php
+│ │ ├── Project.php
+│ │ ├── Task.php
+│ │ └── User.php
+│ └── Providers/
+├── bootstrap/
+├── config/
+│ ├── app.php
+│ ├── auth.php
+│ ├── cache.php
+│ ├── cors.php
+│ ├── database.php
+│ ├── filesystems.php
+│ ├── logging.php
+│ ├── mail.php
+│ ├── queue.php
+│ ├── services.php
+│ └── session.php
+├── database/
+├── docker/
+├── node_modules/
+├── public/
+├── resources/
+│ ├── css/
+│ ├── js/
+│ │ ├── components/
+│ │ ├── Layouts/
+│ │ ├── Pages/
+│ │ │ ├── Auth/
+│ │ │ ├── Profile/
+│ │ │ ├── CalculatorPage.jsx
+│ │ │ ├── Footer.jsx
+│ │ │ ├── Home.jsx
+│ │ │ ├── InputPage.jsx
+│ │ │ ├── Navbar.jsx
+│ │ │ ├── Register.jsx
+│ │ │ └── ResultsPage.jsx
+│ │ ├── App.jsx
+│ │ ├── bootstrap.js
+│ │ └── main.jsx
+│ ├── sass/
+│ └── views/
+│ ├── app.blade.php
+│ ├── report.blade.php
+│ └── task.blade.php
+├── routes/
+│ ├── api.php
+│ ├── auth.php
+│ └── console.php
+├── storage/
 │ ├── app/
-│ │ ├── Http/
-│ │ ├── Models/
-│ │ └── Providers/
-│ ├── bootstrap/
-│ ├── config/
-│ ├── database/
-│ ├── docker/
-│ ├── nginx/
-│ │ └── conf.d/
-│ │ └── app.conf
-│ ├── php/
-│ │ └── Dockerfile
-│ ├── public/
-│ ├── resources/
-│ ├── App.jsx (роутинг)
-│ ├── Pages/
-│ ├── Home.jsx
-│ ├── Navbar.jsx (навигация с NavLink)
-│ ├── InputPage.jsx (отправка данных + navigate)
-│ ├── ResultsPage.jsx (получение данных через useLocation)
-│ ├── CalculatorPage.jsx
-│ └── Register.jsx
-│ ├── routes/
-│ ├── storage/
-│ ├── tests/
-│ ├── vendor/
-│ ├── node_modules/
-│ ├── localhost/
-│ ├── .editorconfig
-│ ├── .env
-│ ├── .env.example
-│ ├── .gitattributes
+│ ├── framework/
+│ ├── logs/
 │ ├── .gitignore
-│ ├── artisan
-│ ├── composer.json
-│ ├── composer.lock
-│ ├── docker-compose.yml
-│ ├── package-lock.json
-│ ├── package.json
-│ ├── phpunit.xml
-│ ├── postcss.config.js
-│ ├── README.md
-│ ├── tailwind.config.js
-│ └── vite.config.js
+│ └── laravel.log
+├── tests/
+├── vendor/
+│
+├── .dockerignore
+├── .editorconfig
+├── .env
+├── .env.example
+├── .gitattributes
+├── .gitignore
+├── artisan
+├── build.sh
+├── Commands.pdf
+├── composer.json
+├── composer.lock
+├── docker-compose.yml
+├── jsonfig.json
+├── package-lock.json
+├── package.json
+├── phpunit.xml
+├── postcss.config.js
+├── README.md
+├── runtime.txt
+├── tailwind.config.js
+└── vite.config.js
