@@ -133,4 +133,53 @@ class CashflowController extends Controller
         $pdf = Pdf::loadView('pdf.report', $data);
         return $pdf->download($data['project_name'] . '_report.pdf');
     }
+    public function getResults($projectName)
+    {
+        $inputData = InputData::whereRaw('LOWER(project_name) = ?', [strtolower($projectName)])
+            ->orderBy('year')
+            ->get();
+
+        if ($inputData->isEmpty()) {
+            return response()->json(['message' => 'Нет данных по проекту'], 404);
+        }
+
+        $taxRate = 0.25;
+        $discountRate = 0.35;
+
+        $cashFlows = [];
+        $cashflowDetails = [];
+
+        foreach ($inputData as $row) {
+            $ebt = $row->revenue - $row->opex - $row->capex;
+            $tax = $ebt > 0 ? $ebt * $taxRate : 0;
+            $netCashFlow = $ebt - $tax;
+            $cashFlows[] = $netCashFlow;
+
+            $cashflowDetails[] = [
+                'year' => $row->year,
+                'revenue' => $row->revenue,
+                'opex' => $row->opex,
+                'capex' => $row->capex,
+                'ebt' => round($ebt, 2),
+                'tax' => round($tax, 2),
+                'cashflow' => round($netCashFlow, 2),
+            ];
+        }
+
+        $npv = round($this->calculateNPV($cashFlows, $discountRate), 2);
+        $irr = round($this->calculateIRR($cashFlows) * 100, 2);
+        $dpbp = $this->calculateDPBP($cashFlows, $discountRate);
+
+        return response()->json([
+            'project_name' => $projectName,
+            'cashflow' => $cashflowDetails,
+            'metrics' => [
+                'npv' => $npv,
+                'irr' => $irr,
+                'dpbp' => $dpbp,
+                'discountRate' => $discountRate * 100,
+                'taxRate' => $taxRate * 100,
+            ]
+        ]);
+    }
 }

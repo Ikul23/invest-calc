@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import { Card, CardBody, CardTitle, CardText } from 'reactstrap';
 import { Line } from 'react-chartjs-2';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import {
   Chart as ChartJS,
   LineElement,
@@ -12,38 +11,50 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { fetchResults, exportPdf } from '../api';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
 const ResultsPage = () => {
+  const { projectName } = useParams();
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('calculationResult');
-    if (stored) {
-      setResult(JSON.parse(stored));
-    }
-  }, []);
+    const loadData = async () => {
+      try {
+        const data = await fetchResults(projectName);
+        setResult(data);
+      } catch (err) {
+        setError(err.message);
+        console.error('Ошибка загрузки:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [projectName]);
 
   const handleDownloadPdf = async () => {
     try {
-      const response = await axios.post('/api/export-pdf', result, {
-        responseType: 'blob',
+      await exportPdf({
+        project_name: result.project_name,
+        cashFlows: result.cashflow,
+        npv: result.metrics.npv,
+        irr: result.metrics.irr,
+        dpbp: result.metrics.dpbp
       });
-
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `${result.project_name}_report.pdf`;
-      link.click();
-      URL.revokeObjectURL(link.href);
     } catch (error) {
       console.error('Ошибка при экспорте PDF:', error);
       alert('Не удалось скачать PDF-файл');
     }
   };
 
-  if (!result) return <div className="container mt-5">Загрузка результатов...</div>;
+  if (loading) return <div className="container mt-5">Загрузка результатов...</div>;
+  if (error) return <div className="container mt-5">Ошибка: {error}</div>;
+  if (!result) return <div className="container mt-5">Нет данных для отображения</div>;
 
   const chartData = {
     labels: result.cashflow.map((row) => `Год ${row.year}`),
@@ -100,38 +111,45 @@ const ResultsPage = () => {
       </div>
 
       <h4 className="mt-4">График денежных потоков:</h4>
-      <Line data={chartData} options={chartOptions} className="mb-5" />
+      <div className="chart-container mb-5" style={{ height: '400px' }}>
+        <Line data={chartData} options={chartOptions} />
+      </div>
 
-      <h4 className="mt-4">Денежные потоки:</h4>
-      <table className="table table-bordered table-striped mt-2">
-        <thead className="table-light">
-          <tr>
-            <th>Год</th>
-            <th>Выручка</th>
-            <th>OPEX</th>
-            <th>CAPEX</th>
-            <th>EBT</th>
-            <th>Налог (25%)</th>
-            <th>Чистый поток</th>
-          </tr>
-        </thead>
-        <tbody>
-          {result.cashflow.map((row, index) => (
-            <tr key={index}>
-              <td>{row.year}</td>
-              <td>{row.revenue.toLocaleString()}</td>
-              <td>{row.opex.toLocaleString()}</td>
-              <td>{row.capex.toLocaleString()}</td>
-              <td>{row.ebt.toLocaleString()}</td>
-              <td>{row.tax.toLocaleString()}</td>
-              <td>{row.cashflow.toLocaleString()}</td>
+      <h4 className="mt-4">Детализация денежных потоков:</h4>
+      <div className="table-responsive">
+        <table className="table table-bordered table-striped mt-2">
+          <thead className="table-light">
+            <tr>
+              <th>Год</th>
+              <th>Выручка</th>
+              <th>OPEX</th>
+              <th>CAPEX</th>
+              <th>EBT</th>
+              <th>Налог (25%)</th>
+              <th>Чистый поток</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {result.cashflow.map((row, index) => (
+              <tr key={index}>
+                <td>{row.year}</td>
+                <td>{row.revenue.toLocaleString()} ₽</td>
+                <td>{row.opex.toLocaleString()} ₽</td>
+                <td>{row.capex.toLocaleString()} ₽</td>
+                <td>{row.ebt.toLocaleString()} ₽</td>
+                <td>{row.tax.toLocaleString()} ₽</td>
+                <td>{row.cashflow.toLocaleString()} ₽</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <button className="btn btn-primary mt-4" onClick={handleDownloadPdf}>
-        Скачать PDF
+      <button
+        className="btn btn-primary mt-4 mb-5"
+        onClick={handleDownloadPdf}
+      >
+        <i className="bi bi-file-earmark-pdf me-2"></i> Скачать PDF отчет
       </button>
     </div>
   );

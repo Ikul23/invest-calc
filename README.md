@@ -42,19 +42,26 @@
 # Структура проекта
 
 invest-calc/
+
 ├── app/
+
 │ ├── Http/
+
 │ │ ├── Controllers/
+│ │ │ ├── CashflowController.php
+│ │ │ ├── Controller.php
+│ │ ├── InputDataController.php
+│ │ ├──ProfileController.php
 │ │ │ ├── Api/
+
 │ │ │ │ └── TaskController.php
+
 │ │ │ ├── Auth/
 │ │ │ │ ├── AuthController.php
-│ │ │ │ ├── CashflowController.php
-│ │ │ │ ├── Controller.php
-│ │ │ │ ├── InputDataController.php
-│ │ │ │ └── ProfileController.php
+
 │ │ ├── Middleware/
 │ │ └── Requests/
+
 │ ├── Models/
 │ │ ├── FinancialData.php
 │ │ ├── InputData.php
@@ -62,7 +69,9 @@ invest-calc/
 │ │ ├── Task.php
 │ │ └── User.php
 │ └── Providers/
+
 ├── bootstrap/
+
 ├── config/
 │ ├── app.php
 │ ├── auth.php
@@ -75,15 +84,23 @@ invest-calc/
 │ ├── queue.php
 │ ├── services.php
 │ └── session.php
+
 ├── database/
 ├── docker/
+
 ├── node_modules/
+
 ├── public/
+
 ├── resources/
 │ ├── css/
+
 │ ├── js/
+
 │ │ ├── components/
+
 │ │ ├── Layouts/
+
 │ │ ├── Pages/
 │ │ │ ├── Auth/
 │ │ │ ├── Profile/
@@ -94,45 +111,72 @@ invest-calc/
 │ │ │ ├── Navbar.jsx
 │ │ │ ├── Register.jsx
 │ │ │ └── ResultsPage.jsx
+
 │ │ ├── App.jsx
 │ │ ├── bootstrap.js
 │ │ └── main.jsx
+
 │ ├── sass/
+
 │ └── views/
 │ ├── app.blade.php
 │ ├── report.blade.php
 │ └── task.blade.php
+
 ├── routes/
 │ ├── api.php
 │ ├── auth.php
 │ └── console.php
+
 ├── storage/
 │ ├── app/
 │ ├── framework/
 │ ├── logs/
 │ ├── .gitignore
 │ └── laravel.log
+
 ├── tests/
+
 ├── vendor/
 │
 ├── .dockerignore
+
 ├── .editorconfig
+
 ├── .env
+
 ├── .env.example
+
 ├── .gitattributes
+
 ├── .gitignore
+
 ├── artisan
+
 ├── build.sh
+
 ├── Commands.pdf
+
 ├── composer.json
+
 ├── composer.lock
+
 ├── docker-compose.yml
+
 ├── jsonfig.json
+
 ├── package-lock.json
+
 ├── package.json
+
 ├── phpunit.xml
+
 ├── postcss.config.js
+
 ├── README.md
+
 ├── runtime.txt
+
 ├── tailwind.config.js
+
 └── vite.config.js

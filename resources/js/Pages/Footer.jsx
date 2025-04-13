@@ -35,6 +35,21 @@ export default function Footer() {
               <FaEnvelope className="me-1" /> Email
             </Button>
           </OverlayTrigger>
+
+            <OverlayTrigger
+            placement="top"
+            overlay={<Tooltip>Profi.ru</Tooltip>}
+          >
+            <Button
+              variant="outline-light"
+              size="sm"
+              className="me-2"
+              href="https://profi.ru/profile/KuleshovIV14"
+              target="_blank"
+            >
+              <FaEnvelope className="me-1" /> Страница на Profi.ru
+            </Button>
+          </OverlayTrigger>
         </div>
 
         <p className="mb-0 small">
