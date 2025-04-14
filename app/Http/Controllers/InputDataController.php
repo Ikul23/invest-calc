@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InputData;
-use App\Models\Project; // Добавим новую модель для проектов
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 

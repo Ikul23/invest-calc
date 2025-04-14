@@ -9,7 +9,7 @@ export default function InputPage() {
     { year: new Date().getFullYear(), opex: '', capex: '', revenue: '' },
   ]);
   const [message, setMessage] = useState('');
-  const [isCalculating, setIsCalculating] = useState(false); // Для индикатора загрузки
+  const [isCalculating, setIsCalculating] = useState(false);
   const navigate = useNavigate();
 
   const handleAddRow = () => {

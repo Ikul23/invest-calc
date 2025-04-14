@@ -66,6 +66,7 @@ invest-calc/
 │ │ ├── FinancialData.php
 │ │ ├── InputData.php
 │ │ ├── Project.php
+│ │ ├── ProjectMetric.php
 │ │ ├── Task.php
 │ │ └── User.php
 │ └── Providers/

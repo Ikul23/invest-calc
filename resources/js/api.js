@@ -8,12 +8,24 @@ const api = axios.create({
   },
 });
 
-export const fetchResults = async (projectName) => {
+export const fetchResults = async (project_id) => {
   try {
-    const response = await api.get(`/results/${projectName}`);
+    const response = await api.get(`/results/${project_id}`);
+    console.log('Данные с сервера:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching results:', error);
+    throw error;
+  }
+};
+
+export const sendData = async (data) => {
+  try {
+    const response = await api.post('/input-data', data);
+    console.log('Успешно отправлено:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при отправке данных:', error);
     throw error;
   }
 };
