@@ -49,6 +49,7 @@ const handleSubmit = async (e) => {
     // Подготовка данных для API
     const requestData = {
       project_name: projectName,
+      discount_rate: 35,
       financial_data: financialData.map(row => ({
         year: row.year,
         opex: Number(row.opex),
@@ -58,7 +59,7 @@ const handleSubmit = async (e) => {
     };
     console.log('Данные для отправки:', requestData);
     // Отправка данных и получение результатов расчетов
-    const response = await axios.post('/api/input-data', requestData, {
+    const response = await axios.post('/api/calculate', requestData, {
       headers: {
         'Content-Type': 'application/json'
       }

@@ -15,9 +15,16 @@ class InputData extends Model
         'project_id',
         'project_name',
         'year',
+        'revenue',
         'opex',
         'capex',
-        'revenue',
+        'depreciation',
+        'ebit',
+        'tax',
+        'net_income',
+        'working_capital',
+        'cashflow',
+        'npv'
     ];
 
     public function project()

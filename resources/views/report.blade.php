@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>Отчет по проекту</title>
+    <meta charset="utf-8">
+    <title>Отчет по проекту {{ $project_name }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -12,68 +12,79 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
         }
 
         th,
         td {
-            border: 1px solid #999;
+            border: 1px solid #ddd;
             padding: 8px;
-            text-align: center;
+            text-align: right;
         }
 
         th {
-            background-color: #eee;
+            background-color: #f2f2f2;
+            text-align: center;
         }
 
-        h2,
-        h3 {
-            margin-top: 20px;
+        .text-left {
+            text-align: left;
+        }
+
+        .metrics {
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            display: inline-block;
+            margin-right: 30px;
         }
     </style>
 </head>
 
 <body>
-    <h2>Отчет по проекту: {{ $data['project_name'] }}</h2>
+    <h1>Отчет по проекту: {{ $project_name }}</h1>
 
-    <h3>Финансовые метрики:</h3>
-    <ul>
-        <li><strong>NPV:</strong> {{ number_format($data['metrics']['npv'], 2, ',', ' ') }} ₽</li>
-        <li><strong>IRR:</strong> {{ $data['metrics']['irr'] }}%</li>
-        <li><strong>DPBP:</strong> {{ $data['metrics']['dpbp'] }} лет</li>
-    </ul>
+    <div class="metrics">
+        <div class="metric"><strong>NPV:</strong> {{ number_format($metrics->npv, 2) }} ₽</div>
+        <div class="metric"><strong>IRR:</strong> {{ number_format($metrics->irr, 2) }}%</div>
+        <div class="metric"><strong>DPBP:</strong> {{ number_format($metrics->dpbp, 2) }} лет</div>
+        <div class="metric"><strong>PP:</strong> {{ number_format($metrics->pp, 2) }} лет</div>
+    </div>
 
-    <h3>Денежные потоки:</h3>
     <table>
         <thead>
             <tr>
-                <th>Год</th>
+                <th class="text-left">Год</th>
                 <th>Выручка</th>
                 <th>OPEX</th>
                 <th>CAPEX</th>
+                <th>Амортизация</th>
                 <th>EBT</th>
-                <th>Налог (25%)</th>
-                <th>Чистый поток</th>
+                <th>Налог</th>
+                <th>Чистая прибыль</th>
+                <th>ЧОК</th>
+                <th>Денежный поток</th>
+                <th>NPV</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($data['cashflow'] as $row)
+            @foreach ($cashflows as $row)
                 <tr>
-                    <td>{{ $row['year'] }}</td>
-                    <td>{{ number_format($row['revenue'], 0, ',', ' ') }}</td>
-                    <td>{{ number_format($row['opex'], 0, ',', ' ') }}</td>
-                    <td>{{ number_format($row['capex'], 0, ',', ' ') }}</td>
-                    <td>{{ number_format($row['ebt'], 0, ',', ' ') }}</td>
-                    <td>{{ number_format($row['tax'], 0, ',', ' ') }}</td>
-                    <td>{{ number_format($row['cashflow'], 0, ',', ' ') }}</td>
+                    <td class="text-left">{{ $row->year }}</td>
+                    <td>{{ number_format($row->revenue, 2) }} ₽</td>
+                    <td>{{ number_format($row->opex, 2) }} ₽</td>
+                    <td>{{ number_format($row->capex, 2) }} ₽</td>
+                    <td>{{ number_format($row->depreciation, 2) }} ₽</td>
+                    <td>{{ number_format($row->ebit, 2) }} ₽</td>
+                    <td>{{ number_format($row->tax, 2) }} ₽</td>
+                    <td>{{ number_format($row->net_income, 2) }} ₽</td>
+                    <td>{{ number_format($row->working_capital, 2) }} ₽</td>
+                    <td>{{ number_format($row->cashflow, 2) }} ₽</td>
+                    <td>{{ number_format($row->npv, 2) }} ₽</td>
                 </tr>
             @endforeach
         </tbody>
     </table>
-
-    <footer style="margin-top: 40px; font-size: 12px; text-align: center;">
-        Контакты: kompaniya.gisplyus@bk.ru | Telegram: @ikul23
-    </footer>
 </body>
 
 </html>

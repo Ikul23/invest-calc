@@ -2,32 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\InputData;
+use App\Models\ProjectMetric;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 
 class ExportPdfController extends Controller
 {
     public function export(Request $request)
     {
         $data = $request->validate([
-            'project_name' => 'required|string',
-            'cashFlows' => 'required|array',
-            'npv' => 'required|numeric',
-            'irr' => 'required|numeric',
-            'dpbp' => 'required|numeric',
+            'project_id' => 'required|integer|exists:projects,id',
         ]);
+
+        $cashflows = InputData::where('project_id', $data['project_id'])
+            ->orderBy('year')
+            ->get();
+
+        $metrics = ProjectMetric::where('project_id', $data['project_id'])->first();
+
+        if (!$cashflows->count() || !$metrics) {
+            return response()->json(['error' => 'Данные не найдены'], 404);
+        }
 
         $pdf = Pdf::loadView('pdf.report', [
-            'projectName' => $data['project_name'],
-            'cashFlows' => $data['cashFlows'],
-            'npv' => $data['npv'],
-            'irr' => $data['irr'],
-            'dpbp' => $data['dpbp'],
-            'taxRate' => 25,
-            'discountRate' => 10
+            'project_name' => $cashflows->first()->project_name,
+            'cashflows' => $cashflows,
+            'metrics' => $metrics
         ]);
 
-        return $pdf->download("{$data['project_name']}_report.pdf");
+        return $pdf->download($cashflows->first()->project_name . '_report.pdf');
     }
 }

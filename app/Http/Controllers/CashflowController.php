@@ -7,165 +7,235 @@ use App\Models\Project;
 use App\Models\ProjectMetric;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CashflowController extends Controller
 {
+    const DEPRECIATION_PERIOD = 7;
+    const TAX_RATE = 0.25;
+    const RECEIVABLES_TURNOVER = 0.35;
+    const PAYABLES_TURNOVER = 0.32;
+
     public function calculate(Request $request)
     {
-        $data = $request->validate([
-            'project_name' => 'required|string',
-            'discount_rate' => 'required|numeric',
-            'tax_rate' => 'required|numeric',
-            'financial_data' => 'required|array',
-            'financial_data.*.year' => 'required|integer',
-            'financial_data.*.revenue' => 'required|numeric',
-            'financial_data.*.opex' => 'required|numeric',
-            'financial_data.*.capex' => 'required|numeric',
-        ]);
-
-        // Создаем проект
-        $project = Project::create([
-            'name' => $data['project_name'],
-            'slug' => Str::slug($data['project_name']) . '-' . time(),
-        ]);
-
-        $projectId = $project->id;
-
-        // Сохраняем финансовые данные
-        foreach ($data['financial_data'] as $yearData) {
-            InputData::create([
-                'project_id' => $projectId,
-                'project_name' => $data['project_name'],
-                'year' => $yearData['year'],
-                'revenue' => $yearData['revenue'],
-                'opex' => $yearData['opex'],
-                'capex' => $yearData['capex'],
+        try {
+            $data = $request->validate([
+                'project_name' => 'required|string',
+                'discount_rate' => 'required|numeric|min:0|max:100',
+                'financial_data' => 'required|array',
+                'financial_data.*.year' => 'required|integer|min:2000|max:2100',
+                'financial_data.*.revenue' => 'required|numeric|min:0',
+                'financial_data.*.opex' => 'required|numeric|min:0',
+                'financial_data.*.capex' => 'required|numeric|min:0',
             ]);
-        }
 
-        // Расчёты
-        $cashflows = [];
-        $initialInvestment = 0;
+            DB::beginTransaction();
 
-        foreach ($data['financial_data'] as $yearData) {
-            $year = $yearData['year'];
-            $revenue = $yearData['revenue'];
-            $opex = $yearData['opex'];
-            $capex = $yearData['capex'];
+            $project = Project::create([
+                'name' => $data['project_name'],
+                'slug' => Str::slug($data['project_name']) . '-' . time(),
+            ]);
 
-            $taxableIncome = $revenue - $opex;
-            $tax = $taxableIncome * ($data['tax_rate'] / 100);
-            $cashflow = ($revenue - $opex - $tax) - $capex;
+            $projectId = $project->id;
+            $depreciationSchedule = $this->calculateDepreciation($data['financial_data']);
+            $initialInvestment = $data['financial_data'][0]['capex'] ?? 0;
 
-            $cashflows[] = $cashflow;
+            $cashflowDetails = [];
+            $cashflows = [];
+            $npvData = [];
+            $cumulativeCashflow = 0;
+            $cumulativeDiscounted = 0;
+            $simplePaybackPeriod = null;
 
-            if ($year === $data['financial_data'][0]['year']) {
-                $initialInvestment = $capex;
+            foreach ($data['financial_data'] as $index => $yearData) {
+                $year = $yearData['year'];
+                $revenue = $yearData['revenue'];
+                $opex = $yearData['opex'];
+                $capex = $yearData['capex'];
+                $depreciation = $depreciationSchedule[$year] ?? 0;
+
+                $ebitda = $revenue - $opex;
+                $ebit = $ebitda - $depreciation;
+                $tax = max(0, $ebit * self::TAX_RATE);
+                $netIncome = $ebit - $tax;
+
+                $receivables = $revenue * self::RECEIVABLES_TURNOVER;
+                $payables = $opex * self::PAYABLES_TURNOVER;
+                $workingCapital = $receivables - $payables;
+
+                $cashflow = $netIncome + $depreciation - $workingCapital - $capex;
+                $cumulativeCashflow += $cashflow;
+
+                $discountRateDecimal = $data['discount_rate'] / 100;
+                $discountedCashflow = $cashflow / pow(1 + $discountRateDecimal, $index + 1);
+                $cumulativeDiscounted += $discountedCashflow;
+                $npvData[] = $cumulativeDiscounted;
+
+                if ($simplePaybackPeriod === null && $cumulativeCashflow >= 0) {
+                    $simplePaybackPeriod = $index + ($cumulativeCashflow - $cashflow) / max($cashflow, 0.0001);
+                }
+
+                $cashflowDetails[] = [
+                    'year' => $year,
+                    'revenue' => $revenue,
+                    'opex' => $opex,
+                    'capex' => $capex,
+                    'depreciation' => $depreciation,
+                    'ebitda' => $ebitda,
+                    'ebit' => $ebit,
+                    'tax' => $tax,
+                    'net_income' => $netIncome,
+                    'working_capital' => $workingCapital,
+                    'cashflow' => $cashflow,
+                    'npv' => $cumulativeDiscounted
+                ];
+
+                $cashflows[] = $cashflow;
             }
-        }
 
-        // NPV
-        $npv = 0;
-        foreach ($cashflows as $i => $cf) {
-            $npv += $cf / pow(1 + ($data['discount_rate'] / 100), $i + 1);
-        }
+            $irr = $this->calculateIRR($cashflows);
+            $dpbp = $this->calculateDPBP($cashflows, $data['discount_rate']);
 
-        // IRR (грубый перебор)
-        $irrGuess = 0.01;
-        $maxIterations = 1000;
-        $tolerance = 0.0001;
-        for ($i = 0; $i < $maxIterations; $i++) {
-            $npvGuess = 0;
-            foreach ($cashflows as $j => $cf) {
-                $npvGuess += $cf / pow(1 + $irrGuess, $j + 1);
+            ProjectMetric::create([
+                'project_id' => $projectId,
+                'npv' => round($cumulativeDiscounted, 2),
+                'irr' => round($irr, 2),
+                'dpbp' => round($dpbp, 2),
+                'pp' => round($simplePaybackPeriod ?? count($cashflows), 2),
+                'discount_rate' => $data['discount_rate'],
+                'depreciation_total' => array_sum(array_column($cashflowDetails, 'depreciation')),
+                'ebit_total' => array_sum(array_column($cashflowDetails, 'ebit')),
+                'net_income_total' => array_sum(array_column($cashflowDetails, 'net_income')),
+                'working_capital_total' => array_sum(array_column($cashflowDetails, 'working_capital')),
+                'initial_investment' => $initialInvestment,
+                'cumulative_cashflow' => $cumulativeCashflow
+            ]);
+
+            foreach ($cashflowDetails as $detail) {
+                InputData::create(array_merge(
+                    ['project_id' => $projectId, 'project_name' => $data['project_name']],
+                    $detail
+                ));
             }
 
-            if (abs($npvGuess) < $tolerance) {
-                break;
-            }
+            DB::commit();
 
-            $irrGuess += 0.0005;
+            return response()->json([
+                'message' => 'Расчет успешно завершен',
+                'projectData' => [
+                    'project_id' => $projectId,
+                    'project_name' => $project->name,
+                    'cashflow' => $cashflowDetails,
+                    'metrics' => [
+                        'npv' => round($cumulativeDiscounted, 2),
+                        'irr' => round($irr, 2),
+                        'dpbp' => round($dpbp, 2),
+                        'pp' => round($simplePaybackPeriod ?? count($cashflows), 2)
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Ошибка расчета Cashflow: ' . $e->getMessage());
+            return response()->json(['error' => 'Ошибка при расчете проекта'], 500);
         }
-        $irr = round($irrGuess * 100, 2);
-
-        // DPBP (Discounted Payback Period)
-        $discountRate = $data['discount_rate'] / 100;
-        $cumulative = 0;
-        $dpbp = 0;
-        foreach ($cashflows as $i => $cf) {
-            $discounted = $cf / pow(1 + $discountRate, $i + 1);
-            $cumulative += $discounted;
-            if ($cumulative < 0) {
-                $dpbp++;
-            } else {
-                $dpbp += (abs($cumulative - $discounted) / $discounted);
-                break;
-            }
-        }
-
-        // Сохраняем метрики
-        ProjectMetric::create([
-            'project_id' => $projectId,
-            'npv' => round($npv, 2),
-            'irr' => $irr,
-            'dpbp' => round($dpbp, 2),
-            'discount_rate' => $data['discount_rate'],
-            'tax_rate' => $data['tax_rate'],
-        ]);
-
-        return response()->json([
-            'message' => 'Расчет выполнен и данные сохранены',
-            'project_id' => $projectId,
-            'npv' => round($npv, 2),
-            'irr' => $irr,
-            'dpbp' => round($dpbp, 2),
-        ]);
     }
 
-
-    public function exportPdf(Request $request)
-    {
-        $data = $request->validate([
-            'project_name' => 'required|string',
-            'cashFlows' => 'required|array',
-            'npv' => 'required|numeric',
-            'irr' => 'required|numeric',
-            'dpbp' => 'required|numeric',
-        ]);
-
-        $pdf = Pdf::loadView('pdf.report', $data);
-        return $pdf->download($data['project_name'] . '_report.pdf');
-    }
     public function getResults($projectId)
     {
-        $inputData = InputData::where('project_id', $projectId)
-            ->orderBy('year')
-            ->get();
+        $project = Project::find($projectId);
 
-        if ($inputData->isEmpty()) {
+        if (!$project) {
             return response()->json(['error' => 'Project not found'], 404);
         }
 
-        $projectName = $inputData->first()->project_name;
+        $cashflow = InputData::where('project_id', $projectId)->get() ?: [];
         $metrics = ProjectMetric::where('project_id', $projectId)->first();
 
-        $cashflowDetails = $inputData->map(function ($row) {
-            return [
-                'year' => $row->year,
-                'revenue' => $row->revenue,
-                'opex' => $row->opex,
-                'capex' => $row->capex,
-                'ebt' => $row->revenue - $row->opex - $row->capex,
-                'tax' => max(0, ($row->revenue - $row->opex - $row->capex) * 0.25),
-                'cashflow' => ($row->revenue - $row->opex - $row->capex) * 0.75
-            ];
-        });
-
         return response()->json([
-            'project_id' => $projectId,
-            'project_name' => $projectName,
-            'cashflows' => $cashflowDetails,
-            'project_metric' => $metrics ?: null
+            'projectData' => [
+                'project_id' => $project->id,
+                'project_name' => $project->name,
+                'cashflow' => $cashflow,
+                'metrics' => $metrics ?? (object)[]
+            ]
         ]);
+    }
+
+
+    private function calculateIRR(array $cashflows, float $initialGuess = 0.1, int $maxIterations = 100, float $tolerance = 1e-6): float
+    {
+        $rate = $initialGuess;
+
+        for ($i = 0; $i < $maxIterations; $i++) {
+            $npv = 0;
+            $derivative = 0;
+
+            foreach ($cashflows as $t => $cashflow) {
+                $npv += $cashflow / pow(1 + $rate, $t + 1);
+                $derivative -= ($t + 1) * $cashflow / pow(1 + $rate, $t + 2);
+            }
+
+            if (abs($derivative) < 1e-10) {
+                break;
+            }
+
+            $newRate = $rate - $npv / $derivative;
+
+
+            if ($newRate < -1) $newRate = -0.99;
+            if ($newRate > 10) $newRate = 10;
+
+            if (abs($newRate - $rate) < $tolerance) {
+                return $newRate * 100;
+            }
+
+            $rate = $newRate;
+        }
+
+
+        return 0;
+    }
+
+    private function calculateDPBP(array $cashflows, float $discountRate): float
+    {
+        $discountRateDecimal = $discountRate / 100;
+        $cumulative = 0;
+
+        foreach ($cashflows as $t => $cashflow) {
+            $discounted = $cashflow / pow(1 + $discountRateDecimal, $t + 1);
+            $cumulative += $discounted;
+
+            if ($cumulative >= 0) {
+                return $t + ($cumulative - $discounted) / max($discounted, 0.0001);
+            }
+        }
+
+        return count($cashflows);
+    }
+
+    private function calculateDepreciation(array $financialData): array
+    {
+        $schedule = [];
+        $period = self::DEPRECIATION_PERIOD;
+
+        foreach ($financialData as $data) {
+            $year = $data['year'];
+            $capex = $data['capex'];
+
+            for ($i = 0; $i < $period; $i++) {
+                $depYear = $year + $i;
+                $annualDep = $capex / $period;
+
+                if (!isset($schedule[$depYear])) {
+                    $schedule[$depYear] = 0;
+                }
+
+                $schedule[$depYear] += $annualDep;
+            }
+        }
+
+        return $schedule;
     }
 }

@@ -11,7 +11,6 @@ const api = axios.create({
 export const fetchResults = async (project_id) => {
   try {
     const response = await api.get(`/results/${project_id}`);
-    console.log('Данные с сервера:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching results:', error);

@@ -15,6 +15,14 @@ class ProjectMetric extends Model
         'irr',
         'dpbp',
         'pp',
+        'discount_rate',
+        'depreciation_total',
+        'ebit_total',
+        'net_income_total',
+        'working_capital_total',
+        'initial_investment',
+        'average_tax_rate',
+        'cumulative_cashflow'
     ];
 
     public function project()
