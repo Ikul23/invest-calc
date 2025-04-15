@@ -377,13 +377,7 @@ const handleDownloadPdf = async () => {
               'Скачать отчет PDF'
             )}
           </Button>
-          <Button
-            color="secondary"
-            onClick={() => navigate('/projects')}
-            className="ms-2"
-          >
-            Вернуться к списку проектов
-          </Button>
+         
         </div>
       </div>
 
