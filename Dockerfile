@@ -34,7 +34,7 @@ RUN composer install --no-dev --optimize-autoloader \
 RUN apt-get update && apt-get install -y nginx
 
 # Копирование конфигурации Nginx
-COPY docker/nginx/default.conf /etc/nginx/sites-available/default
+COPY docker/nginx/conf.d/app.conf /etc/nginx/sites-available/default
 
 
 # Открываем порт
