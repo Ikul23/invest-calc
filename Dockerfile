@@ -30,9 +30,15 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader \
     && npm install && npm run build
 
+# Установка Nginx
+RUN apt-get update && apt-get install -y nginx
+
+# Копирование конфигурации Nginx
+COPY docker/nginx/default.conf /etc/nginx/sites-available/default
+
 
 # Открываем порт
-EXPOSE 8000
+EXPOSE 80
 
 
 COPY docker/php/start.sh /usr/local/bin/start.sh

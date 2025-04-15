@@ -7,5 +7,7 @@ fi
 # Запускаем миграции, если нужно
 php artisan migrate --force
 
+service nginx start
+
 # Запускаем основной процесс
 exec php-fpm
