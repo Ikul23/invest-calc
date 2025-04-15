@@ -181,3 +181,46 @@ invest-calc/
 ├── tailwind.config.js
 
 └── vite.config.js
+
+invest-calc/
+├── 📁 app/ # Основное приложение Laravel
+├── 📁 bootstrap/ # Файлы инициализации приложения
+├── 📁 config/ # Конфигурационные файлы
+├── 📁 database/ # Миграции, сидеры и фабрики
+│ ├── 📁 migrations/ # Миграции базы данных
+│ └── 📁 seeders/ # Наполнители базы данных
+├── 📁 docker/ # Docker-конфигурации
+├── 📁 node_modules/ # Зависимости Node.js (автоматически генерируется)
+├── 📁 public/ # Публичные файлы (компилируемые ресурсы)
+├── 📁 resources/ # Ресурсы приложения
+│ ├── 📁 js/ # JavaScript-файлы
+│ └── 📁 views/ # Blade-шаблоны
+├── 📁 routes/ # Маршруты приложения
+│ ├── api.php # API-маршруты
+│ └── web.php # Web-маршруты
+├── 📁 storage/ # Файлы хранилища
+│ ├── 📁 app/ # Файлы приложения
+│ ├── 📁 framework/ # Файлы фреймворка
+│ └── 📁 logs/ # Логи приложения
+├── 📁 tests/ # Тесты приложения
+├── 📁 vendor/ # Зависимости Composer (автоматически генерируется)
+├── 📄 .dockerignore # Игнорируемые файлы для Docker
+├── 📄 .editorconfig # Настройки редактора кода
+├── 📄 .env # Переменные окружения
+├── 📄 .env.example # Шаблон переменных окружения
+├── 📄 .gitattributes # Атрибуты Git
+├── 📄 .gitignore # Игнорируемые файлы Git
+├── 📄 artisan # CLI-интерфейс Laravel
+├── 📄 build.sh # Скрипт сборки
+├── 📄 composer.json # Конфигурация Composer
+├── 📄 composer.lock # Версии зависимостей Composer
+├── 📄 docker-compose.yml # Конфигурация Docker Compose
+├── 📄 jsconfig.json # Конфигурация JavaScript
+├── 📄 package.json # Конфигурация Node.js
+├── 📄 package-lock.json # Версии зависимостей Node.js
+├── 📄 phpunit.xml # Конфигурация PHPUnit
+├── 📄 postcss.config.js # Конфигурация PostCSS
+├── 📄 README.md # Документация проекта (этот файл)
+├── 📄 runtime.txt # Конфигурация времени выполнения
+├── 📄 tailwind.config.js # Конфигурация Tailwind CSS
+└── 📄 vite.config.js # Конфигурация Vite

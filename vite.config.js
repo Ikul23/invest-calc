@@ -16,4 +16,5 @@ export default defineConfig({
     manifest: true,
         chunkSizeWarningLimit: 1000,
     },
+    base: '/build/', 
 });
