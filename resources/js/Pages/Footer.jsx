@@ -8,6 +8,7 @@ export default function Footer() {
       <Container className="text-center">
         <h5>Нужен полный пакет документов? Свяжитесь с нами!</h5>
         <div className="mb-3">
+
           <OverlayTrigger
             placement="top"
             overlay={<Tooltip>Написать в Telegram</Tooltip>}
@@ -15,7 +16,7 @@ export default function Footer() {
             <Button
               variant="outline-light"
               size="sm"
-              className="me-2"
+              className="mx-2"
               href="https://t.me/ikul23"
               target="_blank"
             >
@@ -30,6 +31,7 @@ export default function Footer() {
             <Button
               variant="outline-light"
               size="sm"
+              className="mx-2"
               href="mailto:kompaniya.gisplyus@bk.ru"
             >
               <FaEnvelope className="me-1" /> Email
@@ -43,7 +45,7 @@ export default function Footer() {
             <Button
               variant="outline-light"
               size="sm"
-              className="me-2"
+              className="mx-2"
               href="https://profi.ru/profile/KuleshovIV14"
               target="_blank"
             >

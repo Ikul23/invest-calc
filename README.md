@@ -113,6 +113,8 @@ invest-calc/
 │ │ │ ├── Register.jsx
 │ │ │ └── ResultsPage.jsx
 
+│ │ ├── constants.js
+│ │ ├── app.js
 │ │ ├── App.jsx
 │ │ ├── bootstrap.js
 │ │ └── main.jsx

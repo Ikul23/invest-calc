@@ -23,3 +23,5 @@ services:
         value: investments_calculator_db_user
       - key: DB_PASSWORD
         sync: false
+      - key: PORT
+        value: 8080
