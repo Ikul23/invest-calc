@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# Генерация ключа
+# Генерация ключа, если не задан
 if [ -z "$APP_KEY" ]; then
-    php artisan key:generate --force
+  php artisan key:generate --force
 fi
 
 # Миграции
 php artisan migrate --force
 
-# Запуск Laravel напрямую
-exec php artisan serve --host=0.0.0.0 --port=8080
+# Запуск php-fpm и nginx (в фоновом режиме и foreground)
+php-fpm -D
+nginx -g "daemon off;"
