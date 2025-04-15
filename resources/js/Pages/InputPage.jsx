@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import Footer from '../Pages/Footer';
 import { useNavigate } from 'react-router-dom';
+import { FINANCE_CONSTANTS } from '../constants';
 
 export default function InputPage() {
   const [projectName, setProjectName] = useState('');
@@ -49,7 +50,7 @@ const handleSubmit = async (e) => {
     // Подготовка данных для API
     const requestData = {
       project_name: projectName,
-      discount_rate: 35,
+      discount_rate: FINANCE_CONSTANTS.DISCOUNT_RATE,
       financial_data: financialData.map(row => ({
         year: row.year,
         opex: Number(row.opex),
@@ -68,6 +69,7 @@ const handleSubmit = async (e) => {
     // Переход на страницу результатов с ID проекта
     if (response.data && response.data.projectData && response.data.projectData.project_id) {
     navigate(`/results/${response.data.projectData.project_id}`);
+
 } else {
       throw new Error('Сервер не вернул ID проекта');
     }

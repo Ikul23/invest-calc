@@ -1,0 +1,8 @@
+// Финансовые константы
+export const FINANCE_CONSTANTS = {
+    DEPRECIATION_PERIOD: 7,
+    TAX_RATE: 0.25,
+    RECEIVABLES_TURNOVER: 0.35,
+    PAYABLES_TURNOVER: 0.32,
+    DISCOUNT_RATE: 35
+};

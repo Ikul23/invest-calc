@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class CashflowController extends Controller
 {
+    const DISCOUNT_RATE = 35; // Добавленная глобальная константа
     const DEPRECIATION_PERIOD = 7;
     const TAX_RATE = 0.25;
     const RECEIVABLES_TURNOVER = 0.35;
@@ -22,13 +23,16 @@ class CashflowController extends Controller
         try {
             $data = $request->validate([
                 'project_name' => 'required|string',
-                'discount_rate' => 'required|numeric|min:0|max:100',
                 'financial_data' => 'required|array',
                 'financial_data.*.year' => 'required|integer|min:2000|max:2100',
                 'financial_data.*.revenue' => 'required|numeric|min:0',
                 'financial_data.*.opex' => 'required|numeric|min:0',
                 'financial_data.*.capex' => 'required|numeric|min:0',
             ]);
+            $data['discount_rate'] = self::DISCOUNT_RATE;
+
+            // Расчеты с использованием константы
+            $discountRateDecimal = self::DISCOUNT_RATE / 100;
 
             DB::beginTransaction();
 
@@ -67,7 +71,6 @@ class CashflowController extends Controller
                 $cashflow = $netIncome + $depreciation - $workingCapital - $capex;
                 $cumulativeCashflow += $cashflow;
 
-                $discountRateDecimal = $data['discount_rate'] / 100;
                 $discountedCashflow = $cashflow / pow(1 + $discountRateDecimal, $index + 1);
                 $cumulativeDiscounted += $discountedCashflow;
                 $npvData[] = $cumulativeDiscounted;
@@ -131,7 +134,8 @@ class CashflowController extends Controller
                         'npv' => round($cumulativeDiscounted, 2),
                         'irr' => round($irr, 2),
                         'dpbp' => round($dpbp, 2),
-                        'pp' => round($simplePaybackPeriod ?? count($cashflows), 2)
+                        'pp' => round($simplePaybackPeriod ?? count($cashflows), 2),
+                        'discount_rate' => self::DISCOUNT_RATE,
                     ]
                 ]
             ]);
@@ -141,8 +145,6 @@ class CashflowController extends Controller
             return response()->json(['error' => 'Ошибка при расчете проекта'], 500);
         }
     }
-
-
 
     private function calculateIRR(array $cashflows, float $initialGuess = 0.1, int $maxIterations = 100, float $tolerance = 1e-6): float
     {
@@ -163,7 +165,6 @@ class CashflowController extends Controller
 
             $newRate = $rate - $npv / $derivative;
 
-
             if ($newRate < -1) $newRate = -0.99;
             if ($newRate > 10) $newRate = 10;
 
@@ -174,8 +175,7 @@ class CashflowController extends Controller
             $rate = $newRate;
         }
 
-
-        return 0;
+        return $rate * 100;
     }
 
     private function calculateDPBP(array $cashflows, float $discountRate): float
@@ -218,6 +218,7 @@ class CashflowController extends Controller
 
         return $schedule;
     }
+
     public function getResults($projectId)
     {
         $project = Project::find($projectId);

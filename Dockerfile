@@ -39,7 +39,7 @@ COPY docker/nginx/conf.d/app.conf /etc/nginx/sites-available/default
 # Открываем порт
 EXPOSE 80
 
-# Копируем и устанавливаем скрипт запуска
+# Копируем скрипт запуска
 COPY docker/php/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 

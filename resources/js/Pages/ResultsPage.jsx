@@ -22,6 +22,7 @@ import {
 } from 'chart.js';
 import { fetchResults, exportPdf } from '../api';
 import Footer from '../Pages/Footer';
+import { FINANCE_CONSTANTS } from '../constants';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
@@ -289,6 +290,14 @@ const handleDownloadPdf = async () => {
               <CardBody>
                 <CardTitle tag="h5">DPBP (дисконтированный срок окупаемости)</CardTitle>
                 <CardText>{formatValue(result.metrics.dpbp)} лет</CardText>
+              </CardBody>
+            </Card>
+          </div>
+          <div className="col-md-3">
+            <Card className="shadow-sm">
+              <CardBody>
+                <CardTitle tag="h5">Ставка дисконтирования</CardTitle>
+                <CardText>Ставка: {FINANCE_CONSTANTS.DISCOUNT_RATE}%</CardText>
               </CardBody>
             </Card>
           </div>
