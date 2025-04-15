@@ -48,7 +48,6 @@
         <div class="metric"><strong>NPV:</strong> {{ number_format($metrics->npv, 2) }} ₽</div>
         <div class="metric"><strong>IRR:</strong> {{ number_format($metrics->irr, 2) }}%</div>
         <div class="metric"><strong>DPBP:</strong> {{ number_format($metrics->dpbp, 2) }} лет</div>
-        <div class="metric"><strong>PP:</strong> {{ number_format($metrics->pp, 2) }} лет</div>
     </div>
 
     <table>

@@ -1,13 +1,11 @@
 services:
   - type: web
-    name: invest-calc-backend
+    name: invest-calc
     env: docker
     repo: https://github.com/Ikul23/invest-calc
-    dockerfilePath: docker/php/Dockerfile
     branch: main
-    autoDeploy: true
-    region: frankfurt
-    plan: free
+    dockerContext: .
+    dockerfilePath: docker/php/Dockerfile
     envVars:
       - key: APP_ENV
         value: production

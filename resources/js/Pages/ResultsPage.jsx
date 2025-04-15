@@ -21,6 +21,7 @@ import {
   Legend,
 } from 'chart.js';
 import { fetchResults, exportPdf } from '../api';
+import Footer from '../Pages/Footer';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
@@ -35,39 +36,36 @@ const ResultsPage = () => {
   useEffect(() => {
     let isMounted = true;
 
-const loadData = async () => {
-  try {
-    setLoading(true);
-    setError(null);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    const response = await fetchResults(project_id);
+        const response = await fetchResults(project_id);
 
-    if (!isMounted) return;
+        if (!isMounted) return;
 
-    // Проверяем, что имеем правильную структуру данных
-    if (!response || !response.projectData) {
-      throw new Error('Некорректный формат данных');
-    }
+        if (!response || !response.projectData) {
+          throw new Error('Некорректный формат данных');
+        }
 
-    const data = response.projectData; // Получаем данные из вложенного объекта
+        const data = response.projectData;
 
-    // Проверка обязательных полей
-    if (!data.project_id || !data.project_name) {
-      throw new Error('Отсутствуют обязательные данные');
-    }
+        if (!data.project_id || !data.project_name) {
+          throw new Error('Отсутствуют обязательные данные');
+        }
 
-    // Нормализация данных
-    const normalizedData = {
-      ...data,
-      cashflows: Array.isArray(data.cashflow) ? data.cashflow : [],
-      metrics: data.metrics || {
-        npv: 0,
-        irr: 0,
-        dpbp: 0,
-        pp: 0
-      },
-      npv_data: data.npv_data || []
-    };
+        const normalizedData = {
+          ...data,
+          cashflows: Array.isArray(data.cashflow) ? data.cashflow : [],
+          metrics: data.metrics || {
+            npv: 0,
+            irr: 0,
+            dpbp: 0,
+            pp: 0
+          },
+          npv_data: data.npv_data || []
+        };
 
         setResult(normalizedData);
       } catch (err) {
@@ -88,19 +86,37 @@ const loadData = async () => {
     };
   }, [project_id, navigate]);
 
-  const handleDownloadPdf = async () => {
-    if (!result?.project_id) return;
+const handleDownloadPdf = async () => {
+  if (!result?.project_id) return;
 
-    setPdfLoading(true);
-    try {
-      await exportPdf({ project_id: result.project_id });
-    } catch (err) {
-      setError('Ошибка генерации PDF: ' + (err.message || 'Неизвестная ошибка'));
-    } finally {
-      setPdfLoading(false);
-    }
-  };
+  setPdfLoading(true);
+  try {
+    const response = await exportPdf({ project_id: result.project_id });
 
+    // Создаем blob из ответа
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+
+    // Создаем временную ссылку для скачивания
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${result.project_name}_report.pdf`);
+    document.body.appendChild(link);
+    link.click();
+
+    // Очистка
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+
+  } catch (err) {
+    console.error('PDF Export Error:', err);
+    setError(`Ошибка генерации PDF: ${err.message || 'Неизвестная ошибка'}`);
+  } finally {
+    setPdfLoading(false);
+  }
+};
   const formatValue = (value) => {
     if (value === null || value === undefined || isNaN(value)) return '—';
     return typeof value === 'number'
@@ -108,66 +124,90 @@ const loadData = async () => {
       : value;
   };
 
-  const getChartData = () => {
-    if (!result?.cashflow || result.cashflow.length === 0) {
+  const getNpvChartData = () => {
+    if (!result?.cashflow || !Array.isArray(result.cashflow)) {
       return { labels: [], datasets: [] };
     }
 
-    const npvData = result.npv_data.length > 0
+    const years = result.cashflow.map(item => item.year);
+    const npvData = result.npv_data?.length > 0
       ? result.npv_data
-      : result.cashflow.reduce((acc, item, index) => {
-          const prev = acc[index - 1] || 0;
-          return [...acc, prev + (item.npv || 0)];
-        }, []);
+      : result.cashflow.map(item => item.npv || 0);
 
     return {
-      labels: result.cashflow.map(item => `Год ${item.year || '—'}`),
+      labels: years,
       datasets: [
         {
-          label: 'Суммарные затраты (CAPEX + OPEX)',
-          data: result.cashflow.map(item => (item.capex || 0) + (item.opex || 0)),
-          borderColor: '#ff6384',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          yAxisID: 'y1',
-        },
-        {
-          label: 'NPV (накопленный)',
+          label: 'NPV (чистый дисконтированный доход)',
           data: npvData,
-          borderColor: '#36a2eb',
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          yAxisID: 'y2',
+          borderColor: '#36A2EB',
+          backgroundColor: function(context) {
+            const ctx = context.chart.ctx;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(54, 162, 235, 0.8)');
+            gradient.addColorStop(1, 'rgba(54, 162, 235, 0.1)');
+            return gradient;
+          },
+          borderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+          tension: 0.4
         }
       ]
     };
   };
 
-  const chartOptions = {
+  const npvChartOptions = {
     responsive: true,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: {
-          label: (context) => {
-            const value = context.parsed.y || 0;
-            return `${context.dataset.label}: ${value.toLocaleString('ru-RU')} ₽`;
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: false,
+        title: {
+          display: true,
+          text: 'Сумма (руб)',
+          font: {
+            weight: 'bold'
           }
+        },
+        ticks: {
+          callback: function(value) {
+            return new Intl.NumberFormat('ru-RU').format(value);
+          }
+        },
+        grid: {
+          color: function(context) {
+            return context.tick.value === 0 ? '#FF0000' : '#E0E0E0';
+          },
+          lineWidth: function(context) {
+            return context.tick.value === 0 ? 2 : 1;
+          }
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Годы',
+          font: {
+            weight: 'bold'
+          }
+        },
+        grid: {
+          display: false
         }
       }
     },
-    scales: {
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        title: { display: true, text: 'Суммарные затраты (₽)' }
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `${context.dataset.label}: ${new Intl.NumberFormat('ru-RU').format(context.parsed.y)} руб`;
+          }
+        }
       },
-      y2: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        title: { display: true, text: 'NPV (₽)' },
-        grid: { drawOnChartArea: false }
+      legend: {
+        display: false
       }
     }
   };
@@ -223,120 +263,122 @@ const loadData = async () => {
   }
 
   return (
-    <div className="container mt-3">
-      <h2 className="mb-4">Результаты: {result.project_name}</h2>
+    <div className="d-flex flex-column min-vh-100">
+      <div className="container mt-3 flex-grow-1">
+        <h2 className="mb-4">Экспресс оценка эффективности инвестиционного проекта: {result.project_name}</h2>
 
-      <div className="row mb-4">
-        <div className="col-md-3">
-          <Card className="shadow-sm">
-            <CardBody>
-              <CardTitle tag="h5">NPV</CardTitle>
-              <CardText>{formatValue(result.metrics.npv)} ₽</CardText>
-            </CardBody>
-          </Card>
-        </div>
-        <div className="col-md-3">
-          <Card className="shadow-sm">
-            <CardBody>
-              <CardTitle tag="h5">IRR</CardTitle>
-              <CardText>{formatValue(result.metrics.irr)}%</CardText>
-            </CardBody>
-          </Card>
-        </div>
-        <div className="col-md-3">
-          <Card className="shadow-sm">
-            <CardBody>
-              <CardTitle tag="h5">DPBP</CardTitle>
-              <CardText>{formatValue(result.metrics.dpbp)} лет</CardText>
-            </CardBody>
-          </Card>
-        </div>
-        <div className="col-md-3">
-          <Card className="shadow-sm">
-            <CardBody>
-              <CardTitle tag="h5">PP</CardTitle>
-              <CardText>{formatValue(result.metrics.pp)} лет</CardText>
-            </CardBody>
-          </Card>
-        </div>
-      </div>
-
-      {result.cashflow.length > 0 && (
-        <>
-          <h4 className="mt-4">График денежных потоков</h4>
-          <div className="chart-container mb-5" style={{ height: '400px' }}>
-            <Line data={getChartData()} options={chartOptions} />
+        <div className="row mb-4">
+          <div className="col-md-3">
+            <Card className="shadow-sm">
+              <CardBody>
+                <CardTitle tag="h5">NPV (чистая приведенная стоимость)</CardTitle>
+                <CardText>{formatValue(result.metrics.npv)} ₽</CardText>
+              </CardBody>
+            </Card>
           </div>
+          <div className="col-md-3">
+            <Card className="shadow-sm">
+              <CardBody>
+                <CardTitle tag="h5">IRR (внутренняя норма доходности)</CardTitle>
+                <CardText>{formatValue(result.metrics.irr)}%</CardText>
+              </CardBody>
+            </Card>
+          </div>
+          <div className="col-md-3">
+            <Card className="shadow-sm">
+              <CardBody>
+                <CardTitle tag="h5">DPBP (дисконтированный срок окупаемости)</CardTitle>
+                <CardText>{formatValue(result.metrics.dpbp)} лет</CardText>
+              </CardBody>
+            </Card>
+          </div>
+        </div>
 
-          <h4 className="mt-4">Финансовые показатели</h4>
-          <div className="table-responsive mb-4">
-            <Table bordered striped>
-              <thead className="table-light">
-                <tr>
-                  <th>Год</th>
-                  <th>Выручка</th>
-                  <th>OPEX</th>
-                  <th>CAPEX</th>
-                  <th>Амортизация</th>
-                  <th>EBT</th>
-                  <th>Налог (25%)</th>
-                  <th>Чистая прибыль</th>
-                  <th>ЧОК</th>
-                  <th>Денежный поток</th>
-                  <th>NPV</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.cashflow.map((row, i) => (
-                  <tr key={i}>
-                    <td>{row.year || '—'}</td>
-                    <td>{formatValue(row.revenue)} ₽</td>
-                    <td>{formatValue(row.opex)} ₽</td>
-                    <td>{formatValue(row.capex)} ₽</td>
-                    <td>{formatValue(row.depreciation)} ₽</td>
-                    <td>{formatValue(row.ebit)} ₽</td>
-                    <td>{formatValue(row.tax)} ₽</td>
-                    <td>{formatValue(row.net_income)} ₽</td>
-                    <td>{formatValue(row.working_capital)} ₽</td>
-                    <td>{formatValue(row.cashflow)} ₽</td>
-                    <td>{formatValue(row.npv)} ₽</td>
+        {/* Единственный график - только NPV */}
+        <div className="mb-5">
+          <h4 className="mb-3">График NPV</h4>
+          <div style={{ height: '500px', position: 'relative' }}>
+            <Line
+              data={getNpvChartData()}
+              options={npvChartOptions}
+            />
+          </div>
+        </div>
+
+        {result.cashflow.length > 0 && (
+          <>
+            <h4 className="mt-4">Финансовые показатели</h4>
+            <div className="table-responsive mb-4">
+              <Table bordered striped>
+                <thead className="table-light">
+                  <tr>
+                    <th>Год</th>
+                    <th>Выручка</th>
+                    <th>OPEX</th>
+                    <th>CAPEX</th>
+                    <th>Амортизация</th>
+                    <th>EBT</th>
+                    <th>Налог (25%)</th>
+                    <th>Чистая прибыль</th>
+                    <th>ЧОК</th>
+                    <th>Денежный поток</th>
+                    <th>NPV</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </>
-      )}
+                </thead>
+                <tbody>
+                  {result.cashflow.map((row, i) => (
+                    <tr key={i}>
+                      <td>{row.year || '—'}</td>
+                      <td>{formatValue(row.revenue)} ₽</td>
+                      <td>{formatValue(row.opex)} ₽</td>
+                      <td>{formatValue(row.capex)} ₽</td>
+                      <td>{formatValue(row.depreciation)} ₽</td>
+                      <td>{formatValue(row.ebit)} ₽</td>
+                      <td>{formatValue(row.tax)} ₽</td>
+                      <td>{formatValue(row.net_income)} ₽</td>
+                      <td>{formatValue(row.working_capital)} ₽</td>
+                      <td>{formatValue(row.cashflow)} ₽</td>
+                      <td>{formatValue(row.npv)} ₽</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </>
+        )}
 
-      {result.cashflow.length === 0 && (
-        <Alert color="info" className="mb-4">
-          Нет данных о денежных потоках
-        </Alert>
-      )}
+        {result.cashflow.length === 0 && (
+          <Alert color="info" className="mb-4">
+            Нет данных о денежных потоках
+          </Alert>
+        )}
 
-      <div className="mb-5">
-        <Button
-          color="primary"
-          onClick={handleDownloadPdf}
-          disabled={pdfLoading || result.cashflow.length === 0}
-        >
-          {pdfLoading ? (
-            <>
-              <Spinner size="sm" className="me-2" />
-              Генерация PDF...
-            </>
-          ) : (
-            'Скачать отчет PDF'
-          )}
-        </Button>
-        <Button
-          color="secondary"
-          onClick={() => navigate('/projects')}
-          className="ms-2"
-        >
-          Вернуться к списку проектов
-        </Button>
+        <div className="mb-5">
+          <Button
+            color="primary"
+            onClick={handleDownloadPdf}
+            disabled={pdfLoading || result.cashflow.length === 0}
+          >
+            {pdfLoading ? (
+              <>
+                <Spinner size="sm" className="me-2" />
+                Генерация PDF...
+              </>
+            ) : (
+              'Скачать отчет PDF'
+            )}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={() => navigate('/projects')}
+            className="ms-2"
+          >
+            Вернуться к списку проектов
+          </Button>
+        </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
