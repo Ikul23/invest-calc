@@ -36,11 +36,10 @@ RUN apt-get update && apt-get install -y nginx
 # Копирование конфигурации Nginx
 COPY docker/nginx/conf.d/app.conf /etc/nginx/sites-available/default
 
-
 # Открываем порт
 EXPOSE 80
 
-
+# Копируем и устанавливаем скрипт запуска
 COPY docker/php/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 

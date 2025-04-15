@@ -7,6 +7,7 @@ fi
 # Запускаем миграции, если нужно
 php artisan migrate --force
 
+# Запускаем Nginx в фоновом режиме
 service nginx start
 
 # Запускаем основной процесс
