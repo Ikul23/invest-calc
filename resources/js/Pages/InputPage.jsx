@@ -66,9 +66,9 @@ const handleSubmit = async (e) => {
     });
  console.log('Получен ответ:', response.data);
     // Переход на страницу результатов с ID проекта
-    if (response.data && response.data.project_id) {
-      navigate(`/results/${response.data.project_id}`);
-    } else {
+    if (response.data && response.data.projectData && response.data.projectData.project_id) {
+    navigate(`/results/${response.data.projectData.project_id}`);
+} else {
       throw new Error('Сервер не вернул ID проекта');
     }
   } catch (error) {

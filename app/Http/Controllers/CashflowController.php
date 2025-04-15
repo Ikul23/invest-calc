@@ -142,26 +142,6 @@ class CashflowController extends Controller
         }
     }
 
-    public function getResults($projectId)
-    {
-        $project = Project::find($projectId);
-
-        if (!$project) {
-            return response()->json(['error' => 'Project not found'], 404);
-        }
-
-        $cashflow = InputData::where('project_id', $projectId)->get() ?: [];
-        $metrics = ProjectMetric::where('project_id', $projectId)->first();
-
-        return response()->json([
-            'projectData' => [
-                'project_id' => $project->id,
-                'project_name' => $project->name,
-                'cashflow' => $cashflow,
-                'metrics' => $metrics ?? (object)[]
-            ]
-        ]);
-    }
 
 
     private function calculateIRR(array $cashflows, float $initialGuess = 0.1, int $maxIterations = 100, float $tolerance = 1e-6): float
@@ -237,5 +217,25 @@ class CashflowController extends Controller
         }
 
         return $schedule;
+    }
+    public function getResults($projectId)
+    {
+        $project = Project::find($projectId);
+
+        if (!$project) {
+            return response()->json(['error' => 'Project not found'], 404);
+        }
+
+        $cashflow = InputData::where('project_id', $projectId)->get() ?: [];
+        $metrics = ProjectMetric::where('project_id', $projectId)->first();
+
+        return response()->json([
+            'projectData' => [
+                'project_id' => $project->id,
+                'project_name' => $project->name,
+                'cashflow' => $cashflow,
+                'metrics' => $metrics ?? (object)[]
+            ]
+        ]);
     }
 }
