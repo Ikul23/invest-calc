@@ -30,12 +30,18 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader \
     && npm install && npm run build
 
+# Установка Nginx
+RUN apt-get update && apt-get install -y nginx
+
+# Копирование конфигурации Nginx
+COPY docker/nginx/conf.d/app.conf /etc/nginx/sites-available/default
+
 # Открываем порт
-EXPOSE 8080
+EXPOSE 80
 
 # Копируем скрипт запуска
 COPY docker/php/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-# Запускаем Laravel напрямую
+# Запускаем скрипт при старте контейнера
 CMD ["/usr/local/bin/start.sh"]
