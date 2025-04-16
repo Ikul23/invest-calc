@@ -26,6 +26,7 @@ WORKDIR /var/www
 # Копируем все файлы
 COPY . .
 
+
 # Устанавливаем зависимости PHP и JS
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install && npm run build

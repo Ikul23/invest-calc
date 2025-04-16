@@ -9,6 +9,8 @@ services:
     envVars:
       - key: APP_ENV
         value: production
+      - key: ENV_FILE
+        value: .env.production
       - key: APP_KEY
         sync: false
       - key: DB_CONNECTION
