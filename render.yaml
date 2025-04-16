@@ -23,3 +23,5 @@ services:
         value: postgres
       - key: DB_USERNAME
         value: postgres
+      - key: DB_PASSWORD
+        sync: false
