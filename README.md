@@ -223,7 +223,7 @@ invest-calc/
 ├── 📄 package-lock.json # Версии зависимостей Node.js
 ├── 📄 phpunit.xml # Конфигурация PHPUnit
 ├── 📄 postcss.config.js # Конфигурация PostCSS
-├── 📄 README.md # Документация проекта (этот файл)
+├── 📄 README.md # Документация проекта
 ├── 📄 runtime.txt # Конфигурация времени выполнения
 ├── 📄 tailwind.config.js # Конфигурация Tailwind CSS
 └── 📄 vite.config.js # Конфигурация Vite
