@@ -27,8 +27,8 @@ WORKDIR /var/www
 COPY . .
 
 # Устанавливаем зависимости PHP и JS
-RUN composer install --no-dev --optimize-autoloader \
-    && npm install && npm run build
+RUN composer install --no-dev --optimize-autoloader
+RUN npm install && npm run build
 
 # Установка Nginx
 RUN apt-get update && apt-get install -y nginx
