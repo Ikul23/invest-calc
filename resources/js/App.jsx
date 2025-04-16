@@ -5,6 +5,7 @@ import CalculatorPage from './Pages/CalculatorPage';
 import InputPage from './Pages/InputPage';
 import ResultsPage from './Pages/ResultsPage';
 import Register from './Pages/Register';
+import GalleryPage from './Pages/GalleryPage'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle';
 import '../css/app.css';
@@ -21,6 +22,7 @@ function App() {
           <Route path="/input" element={<InputPage />} />
           <Route path="/results/:project_id" element={<ResultsPage />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

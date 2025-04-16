@@ -20,6 +20,9 @@ export default function Navbar() {
               <Link className="nav-link" to="/results">Результаты</Link>
             </li>
             <li className="nav-item">
+              <Link className="nav-link" to="/gallery">Примеры работ</Link>
+            </li>
+            <li className="nav-item">
               <Link className="nav-link" to="/register">Регистрация</Link>
             </li>
           </ul>
