@@ -16,12 +16,10 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: dpg-cvv8f7q4d50c73apdn3g-a.pg.render.com
+        value: db.hhdqjitrsixdedotpgfq.supabase.co
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
-        value: investments_calculator_db
+        value: postgres
       - key: DB_USERNAME
-        value: investments_calculator_db_user
-      - key: DB_PASSWORD
-        sync: false
+        value: postgres
