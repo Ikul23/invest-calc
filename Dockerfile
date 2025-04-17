@@ -1,4 +1,3 @@
-# Используем официальный PHP с FPM
 FROM php:8.2-fpm
 
 # Установка системных зависимостей
@@ -23,25 +22,27 @@ RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Задание рабочей директории
+# Рабочая директория
 WORKDIR /var/www/html
 
-# Копируем проект в контейнер
+# Копируем проект
 COPY . .
 
-# Установка зависимостей
-RUN composer install --no-dev --optimize-autoloader
-RUN npm install && npm run build
+# Копируем правильный .env-файл в зависимости от окружения
+ARG APP_ENV=production
+RUN if [ "$APP_ENV" = "production" ]; then cp .env.production .env; else cp .env .env; fi
+
+# Установка зависимостей Laravel и фронта
+RUN composer install --no-dev --optimize-autoloader \
+    && npm install && npm run build
 
 # Копируем Nginx конфиг
 COPY docker/nginx/conf.d/app.conf /etc/nginx/sites-available/default
 
-# Копируем start.sh и делаем исполняемым
+# Копируем и делаем start.sh исполняемым
 COPY docker/php/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-# Открываем порт
+# Порты и команда запуска
 EXPOSE 80
-
-# Запуск контейнера
 CMD ["/usr/local/bin/start.sh"]
