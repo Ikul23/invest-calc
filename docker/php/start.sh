@@ -1,31 +1,15 @@
 #!/bin/bash
-set -e
 
-cd /var/www/html
+# Генерация APP_KEY, если нужно
+if [ -z "$APP_KEY" ]; then
+    php artisan key:generate --force
+fi
 
-# Удаляем .env, если он случайно был скопирован
-rm -f .env
-
-# Печатаем текущий DB_HOST, чтобы увидеть, что реально подставилось
-echo "DB_HOST from Laravel env: $DB_HOST"
-
-# Очистка кэша (на всякий случай перед миграциями)
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-
-# Кэширование снова
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Миграции
+# Запуск миграций
 php artisan migrate --force
 
-# Права
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R 775 storage bootstrap/cache
+# Запуск php-fpm в фоне
+php-fpm &
 
-# Стартуем
-php-fpm -D
-nginx -g "daemon off;"
+# Запуск nginx как основного процесса (чтобы контейнер не падал)
+exec nginx -g 'daemon off;'
