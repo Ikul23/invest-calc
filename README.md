@@ -103,6 +103,7 @@ invest-calc/
 │ │ ├── Layouts/
 
 │ │ ├── Pages/
+
 │ │ │ ├── Auth/
 │ │ │ ├── Profile/
 │ │ │ ├── CalculatorPage.jsx
