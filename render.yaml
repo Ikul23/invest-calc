@@ -13,6 +13,11 @@ services:
         value: base64:cR3SiE+tFb+ohMIVSaksUuGyQheafmORC2gP7dR4Z20=
       - key: APP_URL
         value: https://invest-calc-2ypa.onrender.com
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: warning
+
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
@@ -25,9 +30,15 @@ services:
         value: postgres
       - key: DB_PASSWORD
         value: drqMdv87kSgtFnwm
-      - key: APP_DEBUG
-        value: false
-      - key: LOG_LEVEL
-        value: warning
+
       - key: MAIL_FROM_ADDRESS
         value: kompaniya.gisplyus@bk.ru
+
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: CACHE_STORE
+        value: file
+      - key: FILESYSTEM_DISK
+        value: local
