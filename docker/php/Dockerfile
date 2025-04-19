@@ -1,6 +1,18 @@
+# Этап сборки фронтенда
+FROM node:20-alpine AS node
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY resources/ ./resources/
+COPY vite.config.js ./
+RUN npm run build
+
+# Основной образ PHP
 FROM php:8.2-fpm
 
-# Устанавливаем зависимости
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -9,33 +21,26 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libpq-dev
+    libpq-dev \
+    bash \
+    supervisor \
+    nodejs npm
 
-# Очищаем кеш
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем расширения PHP
 RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
-# Устанавливаем Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Устанавливаем Node.js и npm
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install -y nodejs
+COPY . /var/www
+COPY --from=node /app/public/build /var/www/public/build
 
-# Создаем пользователя и группу www для запуска от непривилегированного пользователя
-RUN groupadd -g 1000 www && \
-    useradd -u 1000 -ms /bin/bash -g www www
+COPY docker/php/start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Меняем права доступа к директории
-COPY --chown=www:www . /var/www
-RUN chown -R www:www /var/www
+RUN chmod -R 777 /var/www/storage /var/www/bootstrap/cache
 
-# Устанавливаем рабочую директорию
 WORKDIR /var/www
 
-USER www
-
 EXPOSE 9000
-CMD ["php-fpm"]
+CMD ["/start.sh"]

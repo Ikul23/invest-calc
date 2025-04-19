@@ -1,48 +1,46 @@
+# Этап сборки фронтенда
+FROM node:20-alpine AS node
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY resources/ ./resources/
+COPY vite.config.js ./
+RUN npm run build
+
+# Основной образ PHP
 FROM php:8.2-fpm
 
-# Установка системных зависимостей
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    zip \
-    unzip \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    zip \
+    unzip \
     libpq-dev \
-    nginx \
-    nodejs \
-    npm \
-    gnupg2 \
-    && apt-get clean
+    bash \
+    supervisor \
+    nodejs npm
 
-# Установка PHP-расширений
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
 RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
-# Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Рабочая директория
-WORKDIR /var/www/html
+COPY . /var/www
+COPY --from=node /app/public/build /var/www/public/build
 
-# Копируем проект
-COPY . .
+COPY docker/php/start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Копируем правильный .env-файл в зависимости от окружения
-ARG APP_ENV=production
-RUN if [ "$APP_ENV" = "production" ]; then cp .env.production .env; else cp .env .env; fi
+RUN chmod -R 777 /var/www/storage /var/www/bootstrap/cache
 
-# Установка зависимостей Laravel и фронта
-RUN composer install --no-dev --optimize-autoloader \
-    && npm install && npm run build
+WORKDIR /var/www
 
-# Копируем Nginx конфиг
-COPY docker/nginx/conf.d/app.conf /etc/nginx/sites-available/default
-
-# Копируем и делаем start.sh исполняемым
-COPY docker/php/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-# Порты и команда запуска
-EXPOSE 80
-CMD ["/usr/local/bin/start.sh"]
+EXPOSE 9000
+CMD ["/start.sh"]
