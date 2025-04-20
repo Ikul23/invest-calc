@@ -2,6 +2,7 @@ services:
   - type: web
     name: invest-calc
     env: docker
+    dockerCommand: php artisan serve --host=0.0.0.0 --port=$PORT
     startCommand: "/start.sh"
     repo: https://github.com/Ikul23/invest-calc
     branch: main
