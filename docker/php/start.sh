@@ -10,9 +10,7 @@ if [ "$APP_ENV" = "production" ]; then
 fi
 
 # Генерация APP_KEY, если нужно
-if [ ! -f storage/oauth-private.key ]; then
-    php artisan key:generate --force
-fi
+php artisan key:generate --force
 
 # Права
 chown -R www-data:www-data storage bootstrap/cache
