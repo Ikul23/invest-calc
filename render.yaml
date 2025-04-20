@@ -2,10 +2,11 @@ services:
   - type: web
     name: invest-calc
     env: docker
+    startCommand: "/start.sh"
     repo: https://github.com/Ikul23/invest-calc
     branch: main
     dockerContext: .
-    dockerfilePath: docker/php/Dockerfile
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: APP_ENV
         value: production
