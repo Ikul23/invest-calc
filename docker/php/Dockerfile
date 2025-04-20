@@ -40,6 +40,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . /var/www
 COPY --from=node /app/public/build /var/www/public/build
 
+COPY .env.production /var/www/.env
+
 WORKDIR /var/www
 
 # Установка зависимостей Laravel (для production)
