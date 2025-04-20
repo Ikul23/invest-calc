@@ -22,4 +22,4 @@ chmod -R 775 storage bootstrap/cache
 php artisan migrate --force
 
 # Запускаем php-fpm как основной процесс
-exec php-fpm
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
