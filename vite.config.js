@@ -16,6 +16,7 @@ export default defineConfig({
         laravel({
             input: 'resources/js/main.jsx',
             refresh: true,
+            buildDirectory: 'build',
         }),
         react(),
     ],

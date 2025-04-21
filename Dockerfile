@@ -8,6 +8,8 @@ RUN npm install
 
 COPY resources/ ./resources/
 COPY vite.config.js ./
+COPY jsconfig.json ./jsconfig.json
+COPY public/ ./public/
 RUN npm run build
 
 # Основной образ PHP
