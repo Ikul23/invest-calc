@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import laravel from 'laravel-vite-plugin'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
     server: {
@@ -16,13 +16,17 @@ export default defineConfig({
         laravel({
             input: 'resources/js/main.jsx',
             refresh: true,
+            publicDirectory: 'public',          // 👈 обязательно
+            buildDirectory: 'build',            // 👈 тоже обязательно
         }),
         react(),
     ],
     build: {
-        outDir: 'public/build',
+        outDir: 'public/build',                 // 👈 совпадает с buildDirectory
         emptyOutDir: true,
         manifest: true,
+            chunkSizeWarningLimit: 1000,
+        manifestFileName: 'manifest.json',     // 👈 Laravel ищет именно это
     },
     base: '/build/',
-});
+})

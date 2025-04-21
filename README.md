@@ -183,8 +183,6 @@ invest-calc/
 
 ├── render.yaml
 
-├── tailwind.config.js
-
 └── vite.config.js
 
 invest-calc/

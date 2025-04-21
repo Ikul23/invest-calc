@@ -12,6 +12,9 @@ COPY jsconfig.json ./jsconfig.json
 COPY public/ ./public/
 RUN npm run build
 
+RUN cp public/build/.vite/manifest.json public/build/manifest.json
+
+
 # Основной образ PHP
 FROM php:8.2-fpm
 
