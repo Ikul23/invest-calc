@@ -29,8 +29,8 @@ Route::get('/{any}', function () {
 Route::get('/test-db', function () {
     try {
         \DB::connection()->getPdo();
-        return '✅ DB connected!';
+        return view('test-db', ['result' => '✅ DB connected!']);
     } catch (\Exception $e) {
-        return '❌ DB error: ' . $e->getMessage();
+        return view('test-db', ['result' => '❌ DB error: ' . $e->getMessage()]);
     }
 });
