@@ -26,15 +26,15 @@ Route::get('/', function () {
 
 Route::get('/test-db', function () {
     try {
-        DB::connection()->getPdo();
-        Log::info('✅ DB connected!');
+        \DB::connection()->getPdo();
+        return '✅ DB connected!';
     } catch (\Exception $e) {
-        Log::error('❌ DB error: ' . $e->getMessage());
+        return response()->json([
+            'status' => '❌ DB error',
+            'message' => $e->getMessage(),
+        ]);
     }
-
-    return response()->json(['status' => 'Check logs']);
 });
-
 
 Route::get('/{any}', function () {
     return view('app');
