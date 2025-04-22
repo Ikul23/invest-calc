@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // Проверим текущее окружение
 $isLocal = env('APP_ENV') === 'local';
@@ -28,9 +30,11 @@ Route::get('/{any}', function () {
 
 Route::get('/test-db', function () {
     try {
-        \DB::connection()->getPdo();
-        return view('test-db', ['result' => '✅ DB connected!']);
+        DB::connection()->getPdo();
+        Log::info('✅ DB connected!');
     } catch (\Exception $e) {
-        return view('test-db', ['result' => '❌ DB error: ' . $e->getMessage()]);
+        Log::error('❌ DB error: ' . $e->getMessage());
     }
+
+    return response()->json(['status' => 'Check logs']);
 });
