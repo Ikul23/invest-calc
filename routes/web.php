@@ -24,10 +24,6 @@ Route::get('/', function () {
     return view('app');
 });
 
-Route::get('/{any}', function () {
-    return view('app');
-})->where('any', '.*');
-
 Route::get('/test-db', function () {
     try {
         DB::connection()->getPdo();
@@ -38,3 +34,8 @@ Route::get('/test-db', function () {
 
     return response()->json(['status' => 'Check logs']);
 });
+
+
+Route::get('/{any}', function () {
+    return view('app');
+})->where('any', '.*');
