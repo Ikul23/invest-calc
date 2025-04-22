@@ -141,8 +141,10 @@ class CashflowController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Ошибка расчета Cashflow: ' . $e->getMessage());
-            return response()->json(['error' => 'Ошибка при расчете проекта'], 500);
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
     }
 
