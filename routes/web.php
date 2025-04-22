@@ -25,3 +25,12 @@ Route::get('/', function () {
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');
+
+Route::get('/test-db', function () {
+    try {
+        \DB::connection()->getPdo();
+        return '✅ DB connected!';
+    } catch (\Exception $e) {
+        return '❌ DB error: ' . $e->getMessage();
+    }
+});
