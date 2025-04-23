@@ -7,6 +7,76 @@
 [![Jest](https://img.shields.io/badge/Jest-C21325?style=flat&logo=jest&logoColor=white)](https://jestjs.io)
 [![Render](https://img.shields.io/badge/Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
 
+# Investment Calculator (Laravel + React SPA)
+
+## Tech Stack
+
+### Backend
+
+-   **Laravel 11** (REST API)
+-   **PostgreSQL 15** (primary database)
+-   **Redis** (caching)
+-   **Sanctum** (authentication)
+
+### Frontend
+
+-   **React 18** (SPA)
+-   **React Router** (navigation)
+-   **Axios** (HTTP client)
+-   **Bootstrap 5** (styling)
+
+### Infrastructure
+
+-   **Docker** (containerization)
+-   **Docker Compose** (orchestration)
+
+### Testing
+
+-   **Jest** + **React Testing Library** (frontend)
+-   **PHPUnit** (backend)
+
+### Hosting
+
+-   **Nginx** server for frontend and API distribution
+-   Hosting: **Render**
+
+### [<Investment Calculator>](https://invest-calc-2ypa.onrender.com)
+
+# 投资计算器 (Laravel + React SPA)
+
+## 技术栈
+
+### 后端
+
+-   **Laravel 11** (REST API)
+-   **PostgreSQL 15** (主数据库)
+-   **Redis** (缓存)
+-   **Sanctum** (身份验证)
+
+### 前端
+
+-   **React 18** (单页应用)
+-   **React Router** (路由导航)
+-   **Axios** (HTTP 客户端)
+-   **Bootstrap 5** (样式设计)
+
+### 基础设施
+
+-   **Docker** (容器化)
+-   **Docker Compose** (容器编排)
+
+### 测试
+
+-   **Jest** + **React Testing Library** (前端测试)
+-   **PHPUnit** (后端测试)
+
+### 托管
+
+-   **Nginx** 服务器用于前端和 API 分发
+-   托管平台: **Render**
+
+### [<投资计算器>](https://invest-calc-2ypa.onrender.com)
+
 ## 📦 Технологический стек
 
 ### Backend
@@ -94,6 +164,15 @@ invest-calc/
 ├── public/
 
 ├── resources/
+
+resources/lang/
+├── en/
+│ └── messages.php
+├── ru/
+│ └── messages.php
+├── zh/
+│ └── messages.php
+
 │ ├── css/
 
 │ ├── js/
