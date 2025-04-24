@@ -1,17 +1,24 @@
-// components/Footer.jsx
 import { Container, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FaTelegram, FaEnvelope } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 
 export default function Footer() {
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('lang', lng);
+  };
+
   return (
     <footer className="bg-dark text-white py-4 mt-auto">
       <Container className="text-center">
-        <h5>Нужен полный пакет документов? Свяжитесь с нами!</h5>
-        <div className="mb-3">
+        <h5>{t("gallery_contact_prompt")}</h5>
 
+        <div className="mb-3">
           <OverlayTrigger
             placement="top"
-            overlay={<Tooltip>Написать в Telegram</Tooltip>}
+            overlay={<Tooltip>{t("contact_tooltip_telegram")}</Tooltip>}
           >
             <Button
               variant="outline-light"
@@ -26,7 +33,7 @@ export default function Footer() {
 
           <OverlayTrigger
             placement="top"
-            overlay={<Tooltip>Отправить email</Tooltip>}
+            overlay={<Tooltip>{t("contact_tooltip_email")}</Tooltip>}
           >
             <Button
               variant="outline-light"
@@ -38,9 +45,9 @@ export default function Footer() {
             </Button>
           </OverlayTrigger>
 
-            <OverlayTrigger
+          <OverlayTrigger
             placement="top"
-            overlay={<Tooltip>Profi.ru</Tooltip>}
+            overlay={<Tooltip>{t("contact_tooltip_profi")}</Tooltip>}
           >
             <Button
               variant="outline-light"
@@ -49,18 +56,16 @@ export default function Footer() {
               href="https://profi.ru/profile/KuleshovIV14"
               target="_blank"
             >
-              <FaEnvelope className="me-1" /> Страница на Profi.ru
+              <FaEnvelope className="me-1" /> Profi.ru
             </Button>
           </OverlayTrigger>
         </div>
 
+
         <p className="mb-0 small">
-          © {new Date().getFullYear()} Все права защищены. Компания "ГИС+"
+          © {new Date().getFullYear()} {t("footer_rights")}
         </p>
-        <p className="mb-0 small">
-          © {new Date().getFullYear()} All Rights Reserved. Company "GIS+"
-        </p>
-      </Container>
+          </Container>
     </footer>
   );
 }

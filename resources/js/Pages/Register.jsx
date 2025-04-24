@@ -2,8 +2,15 @@ import Footer from '../Pages/Footer';
 import { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
+     const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('lang', lng);
+  };
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -34,12 +41,12 @@ export default function Register() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-header bg-primary text-white">
-                <h4>Регистрация</h4>
+                <h4>{t("title_register")}</h4>
               </div>
               <div className="card-body">
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
-                    <label className="form-label">Имя</label>
+                    <label className="form-label">{t("name")}</label>
                     <input
                       type="text"
                       name="name"
@@ -49,7 +56,7 @@ export default function Register() {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Email</label>
+                    <label className="form-label">{t("email")}</label>
                     <input
                       type="email"
                       name="email"
@@ -59,7 +66,7 @@ export default function Register() {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Пароль</label>
+                    <label className="form-label">{t("password")}</label>
                     <input
                       type="password"
                       name="password"
@@ -69,7 +76,7 @@ export default function Register() {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Подтверждение пароля</label>
+                    <label className="form-label">{t("password_confirmation")}</label>
                     <input
                       type="password"
                       name="password_confirmation"
@@ -79,11 +86,11 @@ export default function Register() {
                     />
                   </div>
                   <button type="submit" className="btn btn-primary w-100">
-                    Зарегистрироваться
+                    {t("submit")}
                   </button>
                 </form>
                 <div className="mt-3 text-center">
-                  <Link to="/login">Уже есть аккаунт? Войти</Link>
+                  <Link to="/login">{t("loginLink")}</Link>
                 </div>
               </div>
             </div>

@@ -177,6 +177,15 @@ resources/lang/
 
 │ ├── js/
 
+├── i18n.js
+├── locales/
+│ ├── ru/
+│ │ └── translation.json
+│ ├── en/
+│ │ └── translation.json
+│ └── zh/
+│ └── translation.json
+
 │ │ ├── components/
 
 │ │ ├── Layouts/

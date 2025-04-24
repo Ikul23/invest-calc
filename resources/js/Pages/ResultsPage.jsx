@@ -23,10 +23,19 @@ import {
 import { fetchResults, exportPdf } from '../api';
 import Footer from '../Pages/Footer';
 import { FINANCE_CONSTANTS } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
+
 const ResultsPage = () => {
+     const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('lang', lng);
+  };
+
   const { project_id } = useParams();
   const navigate = useNavigate();
   const [result, setResult] = useState(null);
@@ -139,7 +148,7 @@ const handleDownloadPdf = async () => {
       labels: years,
       datasets: [
         {
-          label: 'NPV (чистый дисконтированный доход)',
+          label: t('title_chart'),
           data: npvData,
           borderColor: '#36A2EB',
           backgroundColor: function(context) {
@@ -167,7 +176,7 @@ const handleDownloadPdf = async () => {
         beginAtZero: false,
         title: {
           display: true,
-          text: 'Сумма (руб)',
+          text: t('yAxis'),
           font: {
             weight: 'bold'
           }
@@ -189,7 +198,7 @@ const handleDownloadPdf = async () => {
       x: {
         title: {
           display: true,
-          text: 'Годы',
+          text: t('xAxis'),
           font: {
             weight: 'bold'
           }
@@ -231,14 +240,14 @@ const handleDownloadPdf = async () => {
               color="primary"
               onClick={() => window.location.reload()}
             >
-              Обновить страницу
+              {t("refresh")}
             </Button>
             <Button
               color="secondary"
               onClick={() => navigate('/projects')}
               className="ms-2"
             >
-              Вернуться к списку проектов
+              t{('backToProjects')}
             </Button>
           </div>
         </Alert>
@@ -256,7 +265,7 @@ const handleDownloadPdf = async () => {
             onClick={() => navigate('/projects')}
             className="ms-2"
           >
-            Вернуться к списку проектов
+             t{('backToProjects')}
           </Button>
         </Alert>
       </div>
@@ -266,13 +275,13 @@ const handleDownloadPdf = async () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <div className="container mt-3 flex-grow-1">
-        <h2 className="mb-4">Экспресс оценка эффективности инвестиционного проекта: {result.project_name}</h2>
+        <h2 className="mb-4">{t("title_result")} {result.project_name}</h2>
 
         <div className="row mb-4">
           <div className="col-md-3">
             <Card className="shadow-sm">
               <CardBody>
-                <CardTitle tag="h5">NPV (чистая приведенная стоимость)</CardTitle>
+                <CardTitle tag="h5">{t("npv")}</CardTitle>
                 <CardText>{formatValue(result.metrics.npv)} ₽</CardText>
               </CardBody>
             </Card>
@@ -280,7 +289,7 @@ const handleDownloadPdf = async () => {
           <div className="col-md-3">
             <Card className="shadow-sm">
               <CardBody>
-                <CardTitle tag="h5">IRR (внутренняя норма доходности)</CardTitle>
+                <CardTitle tag="h5">{t("irr")}</CardTitle>
                 <CardText>{formatValue(result.metrics.irr)}%</CardText>
               </CardBody>
             </Card>
@@ -288,7 +297,7 @@ const handleDownloadPdf = async () => {
           <div className="col-md-3">
             <Card className="shadow-sm">
               <CardBody>
-                <CardTitle tag="h5">DPBP (дисконтированный срок окупаемости)</CardTitle>
+                <CardTitle tag="h5">{t("dpbp")}</CardTitle>
                 <CardText>{formatValue(result.metrics.dpbp)} лет</CardText>
               </CardBody>
             </Card>
@@ -296,16 +305,16 @@ const handleDownloadPdf = async () => {
           <div className="col-md-3">
             <Card className="shadow-sm">
               <CardBody>
-                <CardTitle tag="h5">Ставка дисконтирования</CardTitle>
-                <CardText>Ставка: {FINANCE_CONSTANTS.DISCOUNT_RATE}%</CardText>
+                <CardTitle tag="h5">{t("discountRate")}</CardTitle>
+                <CardText>{FINANCE_CONSTANTS.DISCOUNT_RATE}%</CardText>
               </CardBody>
             </Card>
           </div>
         </div>
 
-        {/* Единственный график - только NPV */}
+
         <div className="mb-5">
-          <h4 className="mb-3">График NPV</h4>
+          <h4 className="mb-3">{t("title_chart")}</h4>
           <div style={{ height: '500px', position: 'relative' }}>
             <Line
               data={getNpvChartData()}
@@ -316,22 +325,22 @@ const handleDownloadPdf = async () => {
 
         {result.cashflow.length > 0 && (
           <>
-            <h4 className="mt-4">Финансовые показатели</h4>
+            <h4 className="mt-4">{t("title_table")}</h4>
             <div className="table-responsive mb-4">
               <Table bordered striped>
                 <thead className="table-light">
                   <tr>
-                    <th>Год</th>
-                    <th>Выручка</th>
-                    <th>OPEX</th>
-                    <th>CAPEX</th>
-                    <th>Амортизация</th>
-                    <th>EBT</th>
-                    <th>Налог (25%)</th>
-                    <th>Чистая прибыль</th>
-                    <th>ЧОК</th>
-                    <th>Денежный поток</th>
-                    <th>NPV</th>
+                    <th>{t("year")}</th>
+                    <th>{t("revenue")}</th>
+                    <th>{t("opex")}</th>
+                    <th>{t("capex")}</th>
+                    <th>{t("depreciation")}</th>
+                    <th>{t("ebt")}</th>
+                    <th>{t("tax")}</th>
+                    <th>{t("netIncome")}</th>
+                    <th>{t("workingCapital")}</th>
+                    <th>{t("cashflow")}</th>
+                    <th>{t("npv_table")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -371,13 +380,13 @@ const handleDownloadPdf = async () => {
             {pdfLoading ? (
               <>
                 <Spinner size="sm" className="me-2" />
-                Генерация PDF...
+                {t("generatingPdf")}
               </>
             ) : (
-              'Скачать отчет PDF'
+              t('downloadPdf')
             )}
           </Button>
-         
+
         </div>
       </div>
 

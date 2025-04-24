@@ -3,8 +3,15 @@ import axios from 'axios';
 import Footer from '../Pages/Footer';
 import { useNavigate } from 'react-router-dom';
 import { FINANCE_CONSTANTS } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 export default function InputPage() {
+     const { t, i18n } = useTranslation();
+
+      const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+        localStorage.setItem('lang', lng);
+      };
   const [projectName, setProjectName] = useState('');
   const [financialData, setFinancialData] = useState([
     { year: new Date().getFullYear(), opex: '', capex: '', revenue: '' },
@@ -97,7 +104,7 @@ const handleSubmit = async (e) => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <div className="container mt-5 flex-grow-1">
-        <h1 className="mb-4">Ввод данных проекта</h1>
+        <h1 className="mb-4">{t("title_input")}</h1>
 
         {message && (
           <div className={`alert ${message.includes('успешно') ? 'alert-success' : 'alert-danger'}`}>
@@ -108,11 +115,11 @@ const handleSubmit = async (e) => {
         <form onSubmit={handleSubmit}>
           <div className="card mb-4">
             <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">Основная информация</h5>
+              <h5 className="mb-0">{t("header_basic")}</h5>
             </div>
             <div className="card-body">
               <div className="mb-3">
-                <label className="form-label">Название проекта *</label>
+                <label className="form-label">{t("project_name")}</label>
                 <input
                   type="text"
                   className="form-control"
@@ -126,7 +133,7 @@ const handleSubmit = async (e) => {
 
           <div className="card mb-4">
             <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">Финансовые показатели</h5>
+              <h5 className="mb-0">{t("header_fin")}</h5>
             </div>
             <div className="card-body">
               {financialData.map((row, index) => (
@@ -199,7 +206,7 @@ const handleSubmit = async (e) => {
                   className="btn btn-secondary"
                   onClick={handleAddRow}
                 >
-                  + Добавить год
+                 {t("add_year")}
                 </button>
               </div>
             </div>
@@ -214,9 +221,9 @@ const handleSubmit = async (e) => {
               {isCalculating ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Расчет...
+                  {t("calculating")}
                 </>
-              ) : 'Рассчитать показатели'}
+              ) : t("button_calc")}
             </button>
           </div>
         </form>
