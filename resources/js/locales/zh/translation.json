@@ -56,6 +56,7 @@
           "downloadPdf": "下载PDF报告",
           "generatingPdf": "正在生成PDF...",
         "refresh": "刷新页面",
-        "backToProjects": "返回项目列表"
+        "backToProjects": "返回项目列表",
+        "warning_message": "警告！在指定期间内，根据您设置的参数 - 项目无法收回投资！"
 
 }

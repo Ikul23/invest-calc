@@ -29,7 +29,7 @@ ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip,
 
 
 const ResultsPage = () => {
-     const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -42,6 +42,7 @@ const ResultsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [isProjectUnprofitable, setIsProjectUnprofitable] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -77,6 +78,11 @@ const ResultsPage = () => {
           npv_data: data.npv_data || []
         };
 
+        // Проверка окупаемости проекта
+        const isNpvNegative = normalizedData.metrics.npv < 0;
+        const isIrrLessThanDiscountRate = normalizedData.metrics.irr < FINANCE_CONSTANTS.DISCOUNT_RATE;
+        setIsProjectUnprofitable(isNpvNegative || isIrrLessThanDiscountRate);
+
         setResult(normalizedData);
       } catch (err) {
         if (!isMounted) return;
@@ -96,37 +102,38 @@ const ResultsPage = () => {
     };
   }, [project_id, navigate]);
 
-const handleDownloadPdf = async () => {
-  if (!result?.project_id) return;
+  const handleDownloadPdf = async () => {
+    if (!result?.project_id) return;
 
-  setPdfLoading(true);
-  try {
-    const response = await exportPdf({ project_id: result.project_id });
+    setPdfLoading(true);
+    try {
+      const response = await exportPdf({ project_id: result.project_id });
 
-    // Создаем blob из ответа
-    const blob = new Blob([response.data], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
+      // Создаем blob из ответа
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
 
-    // Создаем временную ссылку для скачивания
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `${result.project_name}_report.pdf`);
-    document.body.appendChild(link);
-    link.click();
+      // Создаем временную ссылку для скачивания
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${result.project_name}_report.pdf`);
+      document.body.appendChild(link);
+      link.click();
 
-    // Очистка
-    setTimeout(() => {
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    }, 100);
+      // Очистка
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
 
-  } catch (err) {
-    console.error('PDF Export Error:', err);
-    setError(`Ошибка генерации PDF: ${err.message || 'Неизвестная ошибка'}`);
-  } finally {
-    setPdfLoading(false);
-  }
-};
+    } catch (err) {
+      console.error('PDF Export Error:', err);
+      setError(`Ошибка генерации PDF: ${err.message || 'Неизвестная ошибка'}`);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   const formatValue = (value) => {
     if (value === null || value === undefined || isNaN(value)) return '—';
     return typeof value === 'number'
@@ -247,7 +254,7 @@ const handleDownloadPdf = async () => {
               onClick={() => navigate('/projects')}
               className="ms-2"
             >
-              t{('backToProjects')}
+              {t('backToProjects')}
             </Button>
           </div>
         </Alert>
@@ -265,7 +272,7 @@ const handleDownloadPdf = async () => {
             onClick={() => navigate('/projects')}
             className="ms-2"
           >
-             t{('backToProjects')}
+            {t('backToProjects')}
           </Button>
         </Alert>
       </div>
@@ -276,6 +283,13 @@ const handleDownloadPdf = async () => {
     <div className="d-flex flex-column min-vh-100">
       <div className="container mt-3 flex-grow-1">
         <h2 className="mb-4">{t("title_result")} {result.project_name}</h2>
+
+
+        {isProjectUnprofitable && (
+          <Alert color="warning" className="mb-4">
+            <strong>{t("warning_message")} </strong>
+          </Alert>
+        )}
 
         <div className="row mb-4">
           <div className="col-md-3">
@@ -386,7 +400,6 @@ const handleDownloadPdf = async () => {
               t('downloadPdf')
             )}
           </Button>
-
         </div>
       </div>
 

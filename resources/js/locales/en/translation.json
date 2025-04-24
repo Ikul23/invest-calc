@@ -57,7 +57,8 @@
            "downloadPdf": "Download PDF Report",
              "generatingPdf": "Generating PDF...",
         "refresh": "Refresh Page",
-        "backToProjects": "Back to Projects List"
+        "backToProjects": "Back to Projects List",
+        "warning_message": "Warning! With the specified parameters over the given period - the project is not profitable!"
 
 }
 
